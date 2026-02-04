@@ -4,7 +4,7 @@ def convert_temperature_to_float(hex_value: str) -> float:
 
 
 def convert_temperature_to_hex(decimal: float) -> str:
-    decimal = int(decimal * 2.0)
+    decimal = int(decimal * 2.0) # @TODO: Describe how this deals with decimals different to .5
     hex_value = hex(decimal)[2:]  # Remove 0x prefix
     return f"#{hex_value.upper()}"
 
