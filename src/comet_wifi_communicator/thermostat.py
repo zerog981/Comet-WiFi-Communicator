@@ -1,9 +1,9 @@
 from paho.mqtt.client import Client, CONNACK_ACCEPTED
 
-from lib import constants, commands
-from lib.mqtt_topics import MqttTopics
-from lib.helper import convert_temperature_to_float, convert_hex_to_int, convert_temperature_to_hex
-from src.comet_wifi_communicator.lib.helper import validate_and_streamline_mac
+from .lib import constants, commands
+from .lib.mqtt_topics import MqttTopics
+from .lib.helper import convert_temperature_to_float, convert_hex_to_int, convert_temperature_to_hex
+from .lib.helper import validate_and_streamline_mac
 
 
 class Thermostat:
