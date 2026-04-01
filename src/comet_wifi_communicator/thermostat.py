@@ -1,10 +1,41 @@
+from dataclasses import dataclass
+
 from paho.mqtt.client import Client, CONNACK_ACCEPTED
 
 from .lib import constants, commands
+from .lib.constants import TEMPERATURE_HEX_OFF, TEMPERATURE_SETPOINT_MIN, TEMPERATURE_HEX_ON, TEMPERATURE_SETPOINT_MAX, \
+    HEX_PREFIX
 from .lib.mqtt_topics import MqttTopics
 from .lib.helper import convert_temperature_to_float, convert_hex_to_int, convert_temperature_to_hex
 from .lib.helper import validate_and_streamline_mac
 
+@dataclass
+class ThermostatConfig:
+    _key_lock: bool = False
+    _key_lock_plus: bool = False
+    _display_mirrored: bool = False
+    _dst: bool = False
+
+    _hex_string : str = "#0000"
+
+    @property
+    def key_lock(self) -> bool:
+        return self._key_lock
+
+    @key_lock.setter
+    def key_lock(self, value: bool) -> None:
+        self._key_lock = value
+
+    @property
+    def key_lock_plus(self) -> bool:
+        return self._key_lock_plus
+
+    @key_lock_plus.setter
+    def key_lock_plus(self, value: bool) -> None:
+        self._key_lock_plus = value
+
+    def _update_hex_string(self):
+        pass
 
 class Thermostat:
     def __init__(self, mqtt_host: str, mqtt_port: int, mac: str):
@@ -23,8 +54,8 @@ class Thermostat:
         }
 
         self._mqtt_client = Client()
-        self._mqtt_client.on_connect = self.on_mqtt_connect
-        self._mqtt_client.on_message = self.on_mqtt_message
+        self._mqtt_client.on_connect = self._on_mqtt_connect
+        self._mqtt_client.on_message = self._on_mqtt_message
 
         self._mqtt_client.user_data_set([])  # Clear user data from the client
 
@@ -44,20 +75,26 @@ class Thermostat:
     def mac(self) -> str:
         return self._mac
 
-    def on_mqtt_connect(self, client, userdata, flags, reason_code, properties=None):
-        if reason_code is not CONNACK_ACCEPTED:
+    def _on_mqtt_connect(self, client, userdata, flags, reason_code, properties=None):
+        if reason_code is not CONNACK_ACCEPTED.value:
             raise MQTTConnectError
         # Subscribe from on_connect to be sure that subscription is persisted across reconnections
         for topic in self._topics.reply_topics.values():
             client.subscribe(topic)
 
-    def on_mqtt_message(self, client, userdata, message):
+    def _on_mqtt_message(self, client, userdata, message):
         if message.topic == self._topics.request_topics["CONNECTION_TEST"]:
             self.publish_connection_test()
+            self._connected = True
             return
+        if message.topic == self._topics.reply_topics["WILL"]:
+            self._connected = False
+            return
+
         if message.topic == self._topics.reply_topics["TEMPERATURE_AMBIENT"]:
             self._values["temperature_ambient"] = convert_temperature_to_float(message.payload.decode("utf-8"))
             return
+
         if message.topic == self._topics.reply_topics["TEMPERATURE_SETPOINT"]:
             payload = message.payload.decode("utf-8")
             # @TODO: Handle the setpoint transmitted when the thermostat is "on", "off"
@@ -66,20 +103,29 @@ class Thermostat:
                 #self._values["temperature_setpoint"] = constants.TEMPERATURE_SETPOINT_MIN
                 #return
             #self._values["is_heating"] = True
-            self._values["temperature_setpoint"] = convert_temperature_to_float(message.payload.decode("utf-8"))
+            if payload == f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}":
+                self._values["is_heating"] = False
+                self._values["temperature_setpoint"] = TEMPERATURE_SETPOINT_MIN
+                return
+            if payload == f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}":
+                self._values["temperature_setpoint"] = TEMPERATURE_SETPOINT_MAX
+            else:
+                self._values["temperature_setpoint"] = convert_temperature_to_float(payload)
             return
+
         if message.topic == self._topics.reply_topics["BATTERY"]:
             self._values["battery_level"] = convert_hex_to_int(message.payload.decode("utf-8"))
             return
 
-    def publish_connection_test(self):
-            self._mqtt_client.publish(self._topics.request_topics["CONNECTION_TEST"], commands.CONNECTION_TEST)
+    async def publish_connection_test(self):
+        self._mqtt_client.publish(self._topics.request_topics["CONNECTION_TEST"], commands.CONNECTION_TEST)
 
     async def connect(self):
         self._mqtt_client.connect(self._mqtt_host, self._mqtt_port)
         self._mqtt_client.loop_start()
-        self._connected = True
-        self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#02000000") # Request temperature for testing
+        #self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#02000000") # Request temperature for testing
+        await self.update_values()
+        # TODO: Check returned values after some time has passed and set connection state based on that and/or raise error
 
     async def disconnect(self):
         self._mqtt_client.disconnect()
@@ -93,6 +139,8 @@ class Thermostat:
         self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#41000000")
 
     async def set_temperature(self, temperature: float) -> None:
+        if not self._connected:
+            raise
         if temperature > constants.TEMPERATURE_SETPOINT_MAX:
             temperature = constants.TEMPERATURE_SETPOINT_MAX
         if temperature < constants.TEMPERATURE_SETPOINT_MIN:
@@ -103,13 +151,16 @@ class Thermostat:
         self._values["temperature_setpoint"] = temperature
 
     async def turn_off_thermostat(self) -> None:
-        self._mqtt_client.publish(self._topics.request_topics["TEMPERATURE_SETPOINT"], constants.TEMPERATURE_HEX_OFF)
+        self._mqtt_client.publish(self._topics.request_topics["TEMPERATURE_SETPOINT"], f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}")
         self._values["is_heating"] = False
 
     async def turn_fully_on(self) -> None:
-        self._mqtt_client.publish(self._topics.request_topics["TEMPERATURE_SETPOINT"], constants.TEMPERATURE_HEX_ON)
+        self._mqtt_client.publish(self._topics.request_topics["TEMPERATURE_SETPOINT"], f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}")
         self._values["is_heating"] = True
 
 
 class MQTTConnectError(Exception):
+    pass
+
+class ThermostatNotConnectedError(Exception):
     pass

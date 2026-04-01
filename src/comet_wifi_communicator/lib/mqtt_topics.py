@@ -32,5 +32,6 @@ class MqttTopics:
             "CONFIGURATION":        reply_topic_structure + "A3",
             "KEY_LOCK_PLUS_STATE":  reply_topic_structure + "BD",
             "BATTERY":              reply_topic_structure + "A6",
+            "WILL":                 reply_topic_structure + "XX",
         }
 
