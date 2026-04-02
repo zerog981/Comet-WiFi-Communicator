@@ -44,7 +44,7 @@ class Thermostat:
         self._mqtt_host = mqtt_host
         self._mqtt_port = mqtt_port
         self._connected = False
-        self._topics = MqttTopics(mac)
+        self._topics = MqttTopics(self._mac)
         self._values = {
             "temperature_setpoint": 0.0,
             "temperature_ambient": 0.0,
