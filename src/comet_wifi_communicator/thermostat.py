@@ -3,12 +3,14 @@ from dataclasses import dataclass
 from paho.mqtt.client import Client, CONNACK_ACCEPTED
 
 from .lib import constants, commands
-from .lib.commands import REQUEST_ALL_PARAMS, REQUEST_WIFI_SIGNAL
 from .lib.constants import TEMPERATURE_HEX_OFF, TEMPERATURE_SETPOINT_MIN, TEMPERATURE_HEX_ON, TEMPERATURE_SETPOINT_MAX, \
-    HEX_PREFIX
+    HEX_PREFIX, REQUEST_TEMPERATURE_SETPOINT, REQUEST_TEMPERATURE_AMBIENT, REQUEST_TEMPERATURE_OFFSET, REQUEST_CONFIG, \
+    REQUEST_DATETIME, REQUEST_WINDOW_OPEN_CONFIG, REQUEST_BATTERY, REQUEST_BASE_SOFTWARE_VERSION, \
+    REQUEST_WIFI_SOFTWARE_VERSION, REQUEST_WIFI_SIGNAL_STRENGTH
 from .lib.mqtt_topics import MqttTopics
 from .lib.helper import convert_temperature_to_float, convert_hex_to_int, convert_temperature_to_hex
 from .lib.helper import validate_and_streamline_mac
+
 
 @dataclass
 class ThermostatConfig:
@@ -17,7 +19,7 @@ class ThermostatConfig:
     _display_mirrored: bool = False
     _dst: bool = False
 
-    _hex_string : str = "#0000"
+    _hex_string: str = "#0000"
 
     @property
     def key_lock(self) -> bool:
@@ -35,8 +37,25 @@ class ThermostatConfig:
     def key_lock_plus(self, value: bool) -> None:
         self._key_lock_plus = value
 
+    @property
+    def display_mirrored(self) -> bool:
+        return self._display_mirrored
+
+    @display_mirrored.setter
+    def display_mirrored(self, value: bool) -> None:
+        self._display_mirrored = value
+
+    @property
+    def dst(self) -> bool:
+        return self._dst
+
+    @dst.setter
+    def dst(self, value: bool) -> None:
+        self._dst = value
+
     def _update_hex_string(self):
         pass
+
 
 class Thermostat:
     def __init__(self, mqtt_host: str, mqtt_port: int, mac: str):
@@ -84,7 +103,7 @@ class Thermostat:
         # Subscribe from on_connect to be sure that subscription is persisted across reconnections
         for topic in self._topics.reply_topics.values():
             client.subscribe(topic)
-        client.subscribe(self._topics.request_topics["CONNECTION_TEST"])
+        client.subscribe(self._topics.command_topics["CONNECTION_TEST"])
 
     def _on_mqtt_message(self, client, userdata, message):
 
@@ -94,7 +113,7 @@ class Thermostat:
             return
 
         self._connected = True
-        if message.topic == self._topics.request_topics["CONNECTION_TEST"] and not self._skip_connection_test:
+        if message.topic == self._topics.command_topics["CONNECTION_TEST"] and not self._skip_connection_test:
             self._publish_connection_test()
             return
         else:
@@ -114,6 +133,7 @@ class Thermostat:
                 self._values["temperature_setpoint"] = TEMPERATURE_SETPOINT_MAX
             else:
                 self._values["temperature_setpoint"] = convert_temperature_to_float(payload)
+            self._values["is_heating"] = True
             return
 
         if message.topic == self._topics.reply_topics["BATTERY"]:
@@ -121,14 +141,15 @@ class Thermostat:
             return
 
     def _publish_connection_test(self):
-        self._mqtt_client.publish(self._topics.request_topics["CONNECTION_TEST"], commands.CONNECTION_TEST)
+        self._mqtt_client.publish(self._topics.command_topics["CONNECTION_TEST"], commands.CONNECTION_TEST)
         self._skip_connection_test = True
 
     async def connect(self):
         self._mqtt_client.connect(self._mqtt_host, self._mqtt_port)
         self._mqtt_client.loop_start()
-        #self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#02000000") # Request temperature for testing
-        await self.update_all_values()
+        # self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#02000000") # Request temperature for testing
+        self._publish_connection_test()  # In case thermostat is expecting a reply
+        await self.update_standard_values()
         # TODO: Check returned values after some time has passed and set connection state based on that and/or raise error
 
     async def disconnect(self):
@@ -136,25 +157,29 @@ class Thermostat:
         self._mqtt_client.loop_stop()
         self._connected = False
 
-    async def update_values(self) -> None:
-        # Request ambient temperature
-        self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#02000000")
-        # Request setpoint and battery
-        self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#41000000")
-
-    async def update_all_values(self) -> None:
+    async def update_values(self, request_value: int = 0xFFFFFFFF) -> None:
         """
-            Update all available parameters.
+            Update all parameters.
 
             Use this function to fetch setpoint temperature, ambient temperature, battery level,
-            configuration parameters, open window settings etc.
+            configuration parameters, open window settings etc. Supply the constants in the form REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_WIFI_SIGNAL_STRENGTH
 
             :return: Nothing
             :rtype: None
-            Returns
         """
-        self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], REQUEST_ALL_PARAMS)
-        self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], REQUEST_WIFI_SIGNAL)
+        request_str = f"{HEX_PREFIX}{request_value:08X}"
+        self._mqtt_client.publish(self._topics.command_topics["GENERAL_VALUE_REQUEST"], request_str)
+
+    async def update_standard_values(self):
+        await self.update_values(
+            REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_TEMPERATURE_OFFSET | REQUEST_CONFIG |
+            REQUEST_DATETIME | REQUEST_WINDOW_OPEN_CONFIG | REQUEST_BATTERY | REQUEST_BASE_SOFTWARE_VERSION |
+            REQUEST_WIFI_SOFTWARE_VERSION | REQUEST_WIFI_SIGNAL_STRENGTH)
+
+    async def update_heating_values(self):
+        await self.update_values(
+            REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_TEMPERATURE_OFFSET
+        ) # TODO: Add window open
 
     async def set_temperature(self, temperature: float) -> None:
         if not self._connected:
@@ -164,21 +189,26 @@ class Thermostat:
         if temperature < constants.TEMPERATURE_SETPOINT_MIN:
             temperature = constants.TEMPERATURE_SETPOINT_MIN
         temperature_encoded = convert_temperature_to_hex(temperature)
-        self._mqtt_client.publish(self._topics.request_topics["TEMPERATURE_SETPOINT"], temperature_encoded)
-        self._values["is_heating"] = True
-        self._values["temperature_setpoint"] = temperature
+        self._mqtt_client.publish(self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"], temperature_encoded)
+        await self.update_heating_values()
+
 
     async def turn_off(self) -> None:
-        self._mqtt_client.publish(self._topics.request_topics["TEMPERATURE_SETPOINT"], f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}")
-        self._values["is_heating"] = False
+        self._mqtt_client.publish(self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
+                                  f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}")
+        await self.update_heating_values()
+        #self._values["is_heating"] = False
 
     async def turn_fully_on(self) -> None:
-        self._mqtt_client.publish(self._topics.request_topics["TEMPERATURE_SETPOINT"], f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}")
-        self._values["is_heating"] = True
+        self._mqtt_client.publish(self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
+                                  f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}")
+        await self.update_heating_values()
+        #self._values["is_heating"] = True
 
 
 class MQTTConnectError(Exception):
     pass
+
 
 class ThermostatNotConnectedError(Exception):
     pass
