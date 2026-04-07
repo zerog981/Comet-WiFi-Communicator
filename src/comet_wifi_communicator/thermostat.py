@@ -94,6 +94,10 @@ class Thermostat:
         return self._values["temperature_setpoint"]
 
     @property
+    def temperature_ambient(self) -> float:
+        return self._values["temperature_ambient"]
+
+    @property
     def mac(self) -> str:
         return self._mac
 
