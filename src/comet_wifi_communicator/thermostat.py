@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 
 from paho.mqtt.client import Client, CONNACK_ACCEPTED
@@ -6,7 +7,7 @@ from .lib import constants, commands
 from .lib.constants import TEMPERATURE_HEX_OFF, TEMPERATURE_SETPOINT_MIN, TEMPERATURE_HEX_ON, TEMPERATURE_SETPOINT_MAX, \
     HEX_PREFIX, REQUEST_TEMPERATURE_SETPOINT, REQUEST_TEMPERATURE_AMBIENT, REQUEST_TEMPERATURE_OFFSET, REQUEST_CONFIG, \
     REQUEST_DATETIME, REQUEST_WINDOW_OPEN_CONFIG, REQUEST_BATTERY, REQUEST_BASE_SOFTWARE_VERSION, \
-    REQUEST_WIFI_SOFTWARE_VERSION, REQUEST_WIFI_SIGNAL_STRENGTH
+    REQUEST_WIFI_SOFTWARE_VERSION, REQUEST_WIFI_SIGNAL_STRENGTH, CONNECTION_TEST_TIMEOUT
 from .lib.mqtt_topics import MqttTopics
 from .lib.helper import convert_temperature_to_float, convert_hex_to_int, convert_temperature_to_hex
 from .lib.helper import validate_and_streamline_mac
@@ -79,7 +80,7 @@ class Thermostat:
 
         self._mqtt_client.user_data_set([])  # Clear user data from the client
 
-        self._skip_connection_test = False
+        self._last_connection_test_published = 0
 
     @property
     def connected(self) -> bool:
@@ -118,7 +119,8 @@ class Thermostat:
 
         self._connected = True
         if message.topic == self._topics.command_topics["CONNECTION_TEST"] and not self._skip_connection_test:
-            self._publish_connection_test()
+            if (time.time() - self._last_connection_test_published) > CONNECTION_TEST_TIMEOUT:
+                self._publish_connection_test()
             return
         else:
             self._skip_connection_test = False
@@ -146,7 +148,7 @@ class Thermostat:
 
     def _publish_connection_test(self):
         self._mqtt_client.publish(self._topics.command_topics["CONNECTION_TEST"], commands.CONNECTION_TEST)
-        self._skip_connection_test = True
+        self._last_connection_test_published = time.time()
 
     async def connect(self):
         self._mqtt_client.connect(self._mqtt_host, self._mqtt_port)
