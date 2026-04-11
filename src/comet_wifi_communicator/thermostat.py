@@ -118,9 +118,8 @@ class Thermostat:
             return
 
         self._connected = True
-        if message.topic == self._topics.command_topics["CONNECTION_TEST"] and not self._skip_connection_test:
-            if (time.time() - self._last_connection_test_published) > CONNECTION_TEST_TIMEOUT:
-                self._publish_connection_test()
+        if message.topic == self._topics.command_topics["CONNECTION_TEST"] and (time.time() - self._last_connection_test_published) > CONNECTION_TEST_TIMEOUT:
+            self._publish_connection_test()
             return
         else:
             self._skip_connection_test = False
