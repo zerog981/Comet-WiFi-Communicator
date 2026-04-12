@@ -99,6 +99,22 @@ class Thermostat:
         return self._values["temperature_ambient"]
 
     @property
+    def temperature_offset(self) -> float:
+        return self._values["temperature_offset"]
+
+    @property
+    def is_heating(self) -> bool:
+        return self._values["is_heating"]
+
+    @property
+    def window_open(self) -> bool:
+        return self._values["window_open"]
+
+    @property
+    def battery_level(self) -> float:
+        return self._values["battery_level"]
+
+    @property
     def mac(self) -> str:
         return self._mac
 
@@ -152,7 +168,6 @@ class Thermostat:
     async def connect(self):
         self._mqtt_client.connect(self._mqtt_host, self._mqtt_port)
         self._mqtt_client.loop_start()
-        # self._mqtt_client.publish(self._topics.request_topics["GENERAL_VALUE_REQUEST"], "#02000000") # Request temperature for testing
         self._publish_connection_test()  # In case thermostat is expecting a reply
         await self.update_standard_values()
         # TODO: Check returned values after some time has passed and set connection state based on that and/or raise error
