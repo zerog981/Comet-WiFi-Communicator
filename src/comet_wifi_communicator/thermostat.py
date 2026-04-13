@@ -168,9 +168,7 @@ class Thermostat:
     async def connect(self):
         self._mqtt_client.connect(self._mqtt_host, self._mqtt_port)
         self._mqtt_client.loop_start()
-        self._publish_connection_test()  # In case thermostat is expecting a reply
         await self.update_standard_values()
-        # TODO: Check returned values after some time has passed and set connection state based on that and/or raise error
 
     async def disconnect(self):
         self._mqtt_client.disconnect()
