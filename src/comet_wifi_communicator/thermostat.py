@@ -1,3 +1,5 @@
+"""Thermostat communication class."""
+
 import time
 from dataclasses import dataclass
 
