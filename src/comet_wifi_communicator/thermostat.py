@@ -3,16 +3,34 @@
 import time
 from dataclasses import dataclass
 
-from paho.mqtt.client import Client, CONNACK_ACCEPTED
+from paho.mqtt.client import CONNACK_ACCEPTED, Client
 
-from .lib import constants, commands
-from .lib.constants import TEMPERATURE_HEX_OFF, TEMPERATURE_SETPOINT_MIN, TEMPERATURE_HEX_ON, TEMPERATURE_SETPOINT_MAX, \
-    HEX_PREFIX, REQUEST_TEMPERATURE_SETPOINT, REQUEST_TEMPERATURE_AMBIENT, REQUEST_TEMPERATURE_OFFSET, REQUEST_CONFIG, \
-    REQUEST_DATETIME, REQUEST_WINDOW_OPEN_CONFIG, REQUEST_BATTERY, REQUEST_BASE_SOFTWARE_VERSION, \
-    REQUEST_WIFI_SOFTWARE_VERSION, REQUEST_WIFI_SIGNAL_STRENGTH, CONNECTION_TEST_TIMEOUT
+from .lib import commands, constants
+from .lib.constants import (
+    CONNECTION_TEST_TIMEOUT,
+    HEX_PREFIX,
+    REQUEST_BASE_SOFTWARE_VERSION,
+    REQUEST_BATTERY,
+    REQUEST_CONFIG,
+    REQUEST_DATETIME,
+    REQUEST_TEMPERATURE_AMBIENT,
+    REQUEST_TEMPERATURE_OFFSET,
+    REQUEST_TEMPERATURE_SETPOINT,
+    REQUEST_WIFI_SIGNAL_STRENGTH,
+    REQUEST_WIFI_SOFTWARE_VERSION,
+    REQUEST_WINDOW_OPEN_CONFIG,
+    TEMPERATURE_HEX_OFF,
+    TEMPERATURE_HEX_ON,
+    TEMPERATURE_SETPOINT_MAX,
+    TEMPERATURE_SETPOINT_MIN,
+)
+from .lib.helper import (
+    convert_hex_to_int,
+    convert_temperature_to_float,
+    convert_temperature_to_hex,
+    validate_and_streamline_mac,
+)
 from .lib.mqtt_topics import MqttTopics
-from .lib.helper import convert_temperature_to_float, convert_hex_to_int, convert_temperature_to_hex
-from .lib.helper import validate_and_streamline_mac
 
 
 @dataclass
@@ -61,6 +79,9 @@ class ThermostatConfig:
 
 
 class Thermostat:
+    """
+    Thermostat communication class.
+    """
     def __init__(self, mqtt_host: str, mqtt_port: int, mac: str):
         self._mac = validate_and_streamline_mac(mac)
         self._mqtt_host = mqtt_host
@@ -73,7 +94,7 @@ class Thermostat:
             "temperature_offset": 0.0,
             "window_open": False,
             "is_heating": False,
-            "battery_level": 0
+            "battery_level": 0,
         }
 
         self._mqtt_client = Client()
@@ -136,14 +157,20 @@ class Thermostat:
             return
 
         self._connected = True
-        if message.topic == self._topics.command_topics["CONNECTION_TEST"] and (time.time() - self._last_connection_test_published) > CONNECTION_TEST_TIMEOUT:
+        if (
+            message.topic == self._topics.command_topics["CONNECTION_TEST"]
+            and (time.time() - self._last_connection_test_published)
+            > CONNECTION_TEST_TIMEOUT
+        ):
             self._publish_connection_test()
             return
         else:
             self._skip_connection_test = False
 
         if message.topic == self._topics.reply_topics["TEMPERATURE_AMBIENT"]:
-            self._values["temperature_ambient"] = convert_temperature_to_float(message.payload.decode("utf-8"))
+            self._values["temperature_ambient"] = convert_temperature_to_float(
+                message.payload.decode("utf-8")
+            )
             return
 
         if message.topic == self._topics.reply_topics["TEMPERATURE_SETPOINT"]:
@@ -155,16 +182,22 @@ class Thermostat:
             if payload == f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}":
                 self._values["temperature_setpoint"] = TEMPERATURE_SETPOINT_MAX
             else:
-                self._values["temperature_setpoint"] = convert_temperature_to_float(payload)
+                self._values["temperature_setpoint"] = convert_temperature_to_float(
+                    payload
+                )
             self._values["is_heating"] = True
             return
 
         if message.topic == self._topics.reply_topics["BATTERY"]:
-            self._values["battery_level"] = convert_hex_to_int(message.payload.decode("utf-8"))
+            self._values["battery_level"] = convert_hex_to_int(
+                message.payload.decode("utf-8")
+            )
             return
 
     def _publish_connection_test(self):
-        self._mqtt_client.publish(self._topics.command_topics["CONNECTION_TEST"], commands.CONNECTION_TEST)
+        self._mqtt_client.publish(
+            self._topics.command_topics["CONNECTION_TEST"], commands.CONNECTION_TEST
+        )
         self._last_connection_test_published = time.time()
 
     async def connect(self):
@@ -178,28 +211,38 @@ class Thermostat:
         self._connected = False
 
     async def update_values(self, request_value: int = 0xFFFFFFFF) -> None:
-        """
-            Update all parameters.
+        """Update all parameters.
 
-            Use this function to fetch setpoint temperature, ambient temperature, battery level,
-            configuration parameters, open window settings etc. Supply the constants in the form REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_WIFI_SIGNAL_STRENGTH
+        Use this function to fetch setpoint temperature, ambient temperature, battery level,
+        configuration parameters, open window settings etc. Supply the constants in the form REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_WIFI_SIGNAL_STRENGTH
 
-            :return: Nothing
-            :rtype: None
+        :return: Nothing
         """
         request_str = f"{HEX_PREFIX}{request_value:08X}"
-        self._mqtt_client.publish(self._topics.command_topics["GENERAL_VALUE_REQUEST"], request_str)
+        self._mqtt_client.publish(
+            self._topics.command_topics["GENERAL_VALUE_REQUEST"], request_str
+        )
 
     async def update_standard_values(self):
         await self.update_values(
-            REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_TEMPERATURE_OFFSET | REQUEST_CONFIG |
-            REQUEST_DATETIME | REQUEST_WINDOW_OPEN_CONFIG | REQUEST_BATTERY | REQUEST_BASE_SOFTWARE_VERSION |
-            REQUEST_WIFI_SOFTWARE_VERSION | REQUEST_WIFI_SIGNAL_STRENGTH)
+            REQUEST_TEMPERATURE_SETPOINT
+            | REQUEST_TEMPERATURE_AMBIENT
+            | REQUEST_TEMPERATURE_OFFSET
+            | REQUEST_CONFIG
+            | REQUEST_DATETIME
+            | REQUEST_WINDOW_OPEN_CONFIG
+            | REQUEST_BATTERY
+            | REQUEST_BASE_SOFTWARE_VERSION
+            | REQUEST_WIFI_SOFTWARE_VERSION
+            | REQUEST_WIFI_SIGNAL_STRENGTH
+        )
 
     async def update_heating_values(self):
         await self.update_values(
-            REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_TEMPERATURE_OFFSET
-        ) # TODO: Add window open
+            REQUEST_TEMPERATURE_SETPOINT
+            | REQUEST_TEMPERATURE_AMBIENT
+            | REQUEST_TEMPERATURE_OFFSET
+        )  # TODO: Add window open
 
     async def set_temperature(self, temperature: float) -> None:
         if not self._connected:
@@ -209,21 +252,27 @@ class Thermostat:
         if temperature < constants.TEMPERATURE_SETPOINT_MIN:
             temperature = constants.TEMPERATURE_SETPOINT_MIN
         temperature_encoded = convert_temperature_to_hex(temperature)
-        self._mqtt_client.publish(self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"], temperature_encoded)
+        self._mqtt_client.publish(
+            self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
+            temperature_encoded,
+        )
         await self.update_heating_values()
-
 
     async def turn_off(self) -> None:
-        self._mqtt_client.publish(self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
-                                  f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}")
+        self._mqtt_client.publish(
+            self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
+            f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}",
+        )
         await self.update_heating_values()
-        #self._values["is_heating"] = False
+        # self._values["is_heating"] = False
 
     async def turn_fully_on(self) -> None:
-        self._mqtt_client.publish(self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
-                                  f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}")
+        self._mqtt_client.publish(
+            self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
+            f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}",
+        )
         await self.update_heating_values()
-        #self._values["is_heating"] = True
+        # self._values["is_heating"] = True
 
 
 class MQTTConnectError(Exception):

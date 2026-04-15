@@ -20,6 +20,9 @@ license-files = ["LICEN[CS]E*"]
 
 packages = ["src/comet-wifi-communicator"]
 
+[tool.ruff]
+required-version = ">=0.15.1"
+
 [project.urls]
 Homepage = "https://github.com/"
 Issues = "https://github.com/"
