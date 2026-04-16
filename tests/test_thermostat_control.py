@@ -2,14 +2,12 @@
 
 import pytest
 
-from comet_wifi_communicator.const import (
-    TEMPERATURE_SETPOINT_MIN,
-    TEMPERATURE_SETPOINT_MAX,
-)
 from src.comet_wifi_communicator.const import (
     TEMPERATURE_HEX_OFF,
     TEMPERATURE_HEX_ON,
     HEX_PREFIX,
+    TEMPERATURE_SETPOINT_MAX,
+    TEMPERATURE_SETPOINT_MIN,
 )
 
 
