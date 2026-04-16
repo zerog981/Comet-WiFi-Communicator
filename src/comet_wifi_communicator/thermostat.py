@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 from paho.mqtt.client import CONNACK_ACCEPTED, Client
 
-from .lib import commands, constants
-from .lib.constants import (
+from . import const
+from src.comet_wifi_communicator.const import (
     CONNECTION_TEST_TIMEOUT,
     HEX_PREFIX,
     REQUEST_BASE_SOFTWARE_VERSION,
@@ -24,17 +24,18 @@ from .lib.constants import (
     TEMPERATURE_SETPOINT_MAX,
     TEMPERATURE_SETPOINT_MIN,
 )
-from .lib.helper import (
+from src.comet_wifi_communicator.helper import (
     convert_hex_to_int,
     convert_temperature_to_float,
     convert_temperature_to_hex,
     validate_and_streamline_mac,
 )
-from .lib.mqtt_topics import MqttTopics
+from src.comet_wifi_communicator.mqtt_topics import MqttTopics
 
 
 @dataclass
 class ThermostatConfig:
+    """Class for holding thermostat configuration."""
     _key_lock: bool = False
     _key_lock_plus: bool = False
     _display_mirrored: bool = False
@@ -44,14 +45,17 @@ class ThermostatConfig:
 
     @property
     def key_lock(self) -> bool:
+        """Return key lock status."""
         return self._key_lock
 
     @key_lock.setter
     def key_lock(self, value: bool) -> None:
+        """Set key lock status."""
         self._key_lock = value
 
     @property
     def key_lock_plus(self) -> bool:
+        """Return key lock plus status."""
         return self._key_lock_plus
 
     @key_lock_plus.setter
@@ -157,15 +161,10 @@ class Thermostat:
             return
 
         self._connected = True
-        if (
-            message.topic == self._topics.command_topics["CONNECTION_TEST"]
-            and (time.time() - self._last_connection_test_published)
-            > CONNECTION_TEST_TIMEOUT
-        ):
-            self._publish_connection_test()
+        if message.topic == self._topics.command_topics["CONNECTION_TEST"]:
+            if time.time() - self._last_connection_test_published > CONNECTION_TEST_TIMEOUT:
+                self._publish_connection_test()
             return
-        else:
-            self._skip_connection_test = False
 
         if message.topic == self._topics.reply_topics["TEMPERATURE_AMBIENT"]:
             self._values["temperature_ambient"] = convert_temperature_to_float(
@@ -196,7 +195,7 @@ class Thermostat:
 
     def _publish_connection_test(self):
         self._mqtt_client.publish(
-            self._topics.command_topics["CONNECTION_TEST"], commands.CONNECTION_TEST
+            self._topics.command_topics["CONNECTION_TEST"], const.CONNECTION_TEST_COMMAND
         )
         self._last_connection_test_published = time.time()
 
@@ -247,10 +246,10 @@ class Thermostat:
     async def set_temperature(self, temperature: float) -> None:
         if not self._connected:
             raise
-        if temperature > constants.TEMPERATURE_SETPOINT_MAX:
-            temperature = constants.TEMPERATURE_SETPOINT_MAX
-        if temperature < constants.TEMPERATURE_SETPOINT_MIN:
-            temperature = constants.TEMPERATURE_SETPOINT_MIN
+        if temperature > TEMPERATURE_SETPOINT_MAX:
+            temperature = TEMPERATURE_SETPOINT_MAX
+        if temperature < TEMPERATURE_SETPOINT_MIN:
+            temperature = TEMPERATURE_SETPOINT_MIN
         temperature_encoded = convert_temperature_to_hex(temperature)
         self._mqtt_client.publish(
             self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
@@ -278,6 +277,3 @@ class Thermostat:
 class MQTTConnectError(Exception):
     pass
 
-
-class ThermostatNotConnectedError(Exception):
-    pass
