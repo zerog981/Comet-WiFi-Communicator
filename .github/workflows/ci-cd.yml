@@ -28,7 +28,7 @@ jobs:
         run: pip install -r requirements_dev.txt
 
       - name: Perform Bandit Analysis
-        uses: PyCQA/bandit-action@v1
+        run: python -m bandit -r -x "tests" src
 
       - name: Run unit tests
         run: python -m pytest -v --cov=src --cov-fail-under=90 --cov-report=term-missing
