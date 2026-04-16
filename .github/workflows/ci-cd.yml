@@ -1,9 +1,9 @@
 name: ci-cd
 on:
   push:
-    branches: [development]
+    branches: [main, development]
   pull_request:
-    branches: [development]
+    branches: [main]
 
 permissions:
   contents: read
@@ -26,6 +26,9 @@ jobs:
 
       - name: Install required packages
         run: pip install -r requirements_dev.txt
+
+      - name: Perform Bandit Analysis
+        uses: PyCQA/bandit-action@v1
 
       - name: Run unit tests
         run: python -m pytest -v --cov=src --cov-fail-under=90 --cov-report=term-missing
