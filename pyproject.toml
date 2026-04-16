@@ -20,6 +20,29 @@ license-files = ["LICEN[CS]E*"]
 
 packages = ["src/comet-wifi-communicator"]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "pytest-asyncio>=1.3",
+    "pytest-mock>=3.15",
+    "pytest-cov>=7.1",
+    "bandit>=1.9",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+asyncio_mode = "auto"
+markers = [
+    "asyncio: marks tests as async (deselect with '-m \"not asyncio\"')",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*"]
+
 [tool.ruff]
 required-version = ">=0.15.1"
 

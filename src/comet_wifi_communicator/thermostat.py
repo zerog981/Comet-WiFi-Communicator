@@ -114,7 +114,7 @@ class Thermostat:
         return self._connected
 
     @property
-    def controller_name(self) -> str:
+    def mqtt_host(self) -> str:
         return self._mqtt_host
 
     @property
@@ -245,7 +245,7 @@ class Thermostat:
 
     async def set_temperature(self, temperature: float) -> None:
         if not self._connected:
-            raise
+            raise ConnectionError()
         if temperature > TEMPERATURE_SETPOINT_MAX:
             temperature = TEMPERATURE_SETPOINT_MAX
         if temperature < TEMPERATURE_SETPOINT_MIN:
@@ -258,22 +258,23 @@ class Thermostat:
         await self.update_heating_values()
 
     async def turn_off(self) -> None:
+        if not self._connected:
+            raise ConnectionError()
         self._mqtt_client.publish(
             self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
             f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}",
         )
         await self.update_heating_values()
-        # self._values["is_heating"] = False
 
     async def turn_fully_on(self) -> None:
+        if not self._connected:
+            raise ConnectionError()
         self._mqtt_client.publish(
             self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
             f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}",
         )
         await self.update_heating_values()
-        # self._values["is_heating"] = True
 
 
 class MQTTConnectError(Exception):
     pass
-
