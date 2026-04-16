@@ -3,4 +3,5 @@ repos:
     rev: 1.9.4
     hooks:
       - id: bandit
+        args: ["-r", "src/"]
         exclude: ^(tests/|test_.*\.py)

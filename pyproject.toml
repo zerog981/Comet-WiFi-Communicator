@@ -30,6 +30,10 @@ dev = [
     "pre-commit>=4.5",
 ]
 
+[project.urls]
+Homepage = "https://github.com/"
+Issues = "https://github.com/"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
@@ -47,6 +51,6 @@ omit = ["*/tests/*"]
 [tool.ruff]
 required-version = ">=0.15.1"
 
-[project.urls]
-Homepage = "https://github.com/"
-Issues = "https://github.com/"
+[tool.bandit]
+exclude_dirs = ["tests"]
+
