@@ -27,8 +27,5 @@ jobs:
       - name: Install required packages
         run: pip install -r requirements_dev.txt
 
-      - name: Install poetry
-        uses: snok/install-poetry
-
       - name: Run unit tests
         run: python -m pytest -v --cov=src --cov-fail-under=90 --cov-report=term-missing
