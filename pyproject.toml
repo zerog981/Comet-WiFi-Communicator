@@ -54,3 +54,5 @@ required-version = ">=0.15.1"
 [tool.bandit]
 exclude_dirs = ["tests"]
 
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
