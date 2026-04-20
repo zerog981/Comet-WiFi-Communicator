@@ -56,3 +56,4 @@ exclude_dirs = ["tests"]
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
+allow_zero_version = "True"
