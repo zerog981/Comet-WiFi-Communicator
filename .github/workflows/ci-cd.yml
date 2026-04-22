@@ -64,7 +64,7 @@ jobs:
         if: steps.release.outputs.released == 'true'
         with:
           repository-url: https://test.pypi.org/legacy/
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          #password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
       - name: Test install from TestPyPI
         run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple comet-wifi-communicator
@@ -82,11 +82,5 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         if: steps.release.outputs.released == 'true'
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-
-      #- name: Create Github Release
-      #  uses: python-semantic-release/upload-to-gh-release@main
-      #  if: steps.release.outputs.released == 'true'
-      #  with:
-      #    github_token: ${{ secrets.GITHUB_TOKEN }}
+        #with:
+          #password: ${{ secrets.PYPI_API_TOKEN }}
