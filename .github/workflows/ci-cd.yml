@@ -10,10 +10,7 @@ permissions:
 
 jobs:
   ci:
-    # Set up OS
     runs-on: ubuntu-latest
-
-    # Job steps
     steps:
       - name: Check-out repository
         uses: actions/checkout@v6
@@ -36,7 +33,6 @@ jobs:
   cd-build:
     permissions:
       contents: write
-      #id-token: write
     needs: ci
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -84,7 +80,7 @@ jobs:
 
       - name: Publish package TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        if: steps.release.outputs.released == 'true'
+        if: needs.cd-build.outputs.released == 'true'
         with:
           repository-url: https://test.pypi.org/legacy/
 
@@ -116,7 +112,7 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        if: steps.release.outputs.released == 'true'
+        if: needs.cd-build.outputs.released
 
       - name: Test install from TestPyPI
         run: pip install comet-wifi-communicator
