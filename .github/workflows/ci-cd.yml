@@ -72,6 +72,9 @@ jobs:
     needs: cd-build
     if: needs.cd-build.outputs.released == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ needs.cd-build.outputs.version }}
+      released: ${{ needs.cd-build.outputs.released }}
     steps:
       - name: Check-out repository
         uses: actions/checkout@v6
@@ -112,7 +115,7 @@ jobs:
       id-token: write
       contents: read
     needs: cd-publish-testpypi
-    if: needs.cd-build.outputs.released == 'true'
+    if: needs.cd-publish-testpypi.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check-out repository
@@ -132,7 +135,7 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        if: needs.cd-build.outputs.released == 'true'
+        if: needs.cd-publish-testpypi.outputs.released == 'true'
 
       - name: Test install from TestPyPI
         run: pip install --no-cache-dir --force-reinstall comet-wifi-communicator
@@ -140,7 +143,7 @@ jobs:
       - name: Verify that latest version got installed
         run: |
           INSTALLED_VERSION=$(pip show comet-wifi-communicator | grep Version | awk '{print $2}') 
-          LATEST_VERSION=${{ needs.cd-build.outputs.version }}
+          LATEST_VERSION=${{ needs.cd-publish-testpypi.outputs.version }}
           if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
             echo "ERROR: Installed version $INSTALLED_VERSION does not match released version $LATEST_VERSION"
             exit 1
