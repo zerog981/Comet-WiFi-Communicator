@@ -69,6 +69,16 @@ jobs:
       - name: Test install from TestPyPI
         run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple comet-wifi-communicator
 
+      - name: Verify that latest version got installed
+        run: |
+          INSTALLED_VERSION=$(pip show pycounts | grep Version | awk '{print $2}') 
+          LATEST_VERSION=$(steps.release.outputs.version)
+          if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
+            echo "ERROR: Installed version $INSTALLED_VERSION does not match released version $LATEST_VERSION"
+            exit 1
+          fi
+          echo "✓ Verified: pycounts $INSTALLED_VERSION installed correctly"
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         if: steps.release.outputs.released == 'true'
