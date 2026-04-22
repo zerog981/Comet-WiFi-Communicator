@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.1 (2026-04-22)
+
+### Bug Fixes
+
+- Variable in project description
+  ([`f221bb8`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/f221bb8002a1a8569971dc76d8eea7531d2fe482))
+
+
 ## v0.2.0 (2026-04-22)
 
 ### Features
