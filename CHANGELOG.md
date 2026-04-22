@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.4.3 (2026-04-22)
+
+### Bug Fixes
+
+- Dependencies
+  ([`4edddd4`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/4edddd4a19c594427e70fb71a2bcce3dc671e01e))
+
+- Missing checking-out of repository
+  ([`5fa474e`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/5fa474e20a4ff9438561f340a59a4fa08dd58b82))
+
+
 ## v0.4.2 (2026-04-22)
 
 ### Bug Fixes
