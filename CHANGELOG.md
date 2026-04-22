@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.1 (2026-04-22)
+
+### Bug Fixes
+
+- Condition in publishing steps
+  ([`7610604`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/7610604fa72e79fdd3a60345ff870a957083dcc8))
+
+
 ## v0.4.0 (2026-04-22)
 
 ### Bug Fixes
