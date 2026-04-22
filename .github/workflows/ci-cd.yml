@@ -73,7 +73,7 @@ jobs:
     permissions:
       id-token: write
     needs: cd-build
-    if: steps.release.outputs.released == 'true'
+    if: needs.cd-build.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -105,7 +105,7 @@ jobs:
     permissions:
       id-token: write
     needs: cd-publish-testpypi
-    if: steps.release.outputs.released == 'true'
+    if: needs.cd-build.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
