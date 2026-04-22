@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.5.0 (2026-04-22)
+
+### Features
+
+- Add sleep before checking published package
+  ([`d6d9225`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/d6d9225428ec76b5c47721ba2c4aadc01091b7ab))
+
+
 ## v0.4.8 (2026-04-22)
 
 ### Bug Fixes
