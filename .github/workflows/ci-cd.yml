@@ -72,7 +72,7 @@ jobs:
       - name: Verify that latest version got installed
         run: |
           INSTALLED_VERSION=$(pip show comet-wifi-communicator | grep Version | awk '{print $2}') 
-          LATEST_VERSION=$(steps.release.outputs.version)
+          LATEST_VERSION=${{ steps.release.outputs.version }}
           if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
             echo "ERROR: Installed version $INSTALLED_VERSION does not match released version $LATEST_VERSION"
             exit 1
