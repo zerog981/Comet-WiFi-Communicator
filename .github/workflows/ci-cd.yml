@@ -55,6 +55,7 @@ jobs:
 
       - name: Prepare new release
         uses: python-semantic-release/python-semantic-release@v10.5.3
+        id: release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
