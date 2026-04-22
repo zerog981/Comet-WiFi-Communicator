@@ -58,5 +58,5 @@ exclude_dirs = ["tests"]
 version_toml = ["pyproject.toml:project.version"]
 branch = 'main'
 changelog_file = 'CHANGELOG.md'
-build_commands = 'python -m pip install -r requirements_dev.txt && python -m build'
+build_command = 'python -m pip install -r requirements_dev.txt && python -m build'
 allow_zero_version = true
