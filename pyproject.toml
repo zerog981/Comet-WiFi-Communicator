@@ -4,7 +4,7 @@ requires = ["hatchling >= 1.26",
 build-backend = "hatchling.build"
 [project]
 name = "comet-wifi-communicator"
-version = "0.4.1"
+version = "0.4.2"
 authors = [
   { name="zerog981", email="zerog981@example.com" },
 ]

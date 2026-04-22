@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.2 (2026-04-22)
+
+### Bug Fixes
+
+- Missing python installation in publishing jobs
+  ([`6829915`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/6829915dd521bb9bc4bac559836ae8eda4fc08de))
+
+
 ## v0.4.1 (2026-04-22)
 
 ### Bug Fixes
