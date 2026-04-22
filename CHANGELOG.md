@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.5.1 (2026-04-22)
+
+### Bug Fixes
+
+- Purge pip cache before check
+  ([`a935b9e`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/a935b9e0fd0dc8f4dc05f9488c39a9817ca3c343))
+
+
 ## v0.5.0 (2026-04-22)
 
 ### Features
