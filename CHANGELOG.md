@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.0 (2026-04-22)
+
+### Features
+
+- Check installed version is most recent
+  ([`e492f52`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/e492f525ecf6567994db13d8c3b8d881732e5f7e))
+
+
 ## v0.1.0 (2026-04-22)
 
 ### Bug Fixes
