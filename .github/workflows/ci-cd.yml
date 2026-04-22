@@ -72,6 +72,12 @@ jobs:
     if: needs.cd-build.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
@@ -104,6 +110,12 @@ jobs:
     if: needs.cd-build.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
