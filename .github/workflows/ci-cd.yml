@@ -71,13 +71,13 @@ jobs:
 
       - name: Verify that latest version got installed
         run: |
-          INSTALLED_VERSION=$(pip show pycounts | grep Version | awk '{print $2}') 
+          INSTALLED_VERSION=$(pip show comet-wifi-communicator | grep Version | awk '{print $2}') 
           LATEST_VERSION=$(steps.release.outputs.version)
           if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
             echo "ERROR: Installed version $INSTALLED_VERSION does not match released version $LATEST_VERSION"
             exit 1
           fi
-          echo "✓ Verified: pycounts $INSTALLED_VERSION installed correctly"
+          echo "✓ Verified: comet-wifi-communicator $INSTALLED_VERSION installed correctly -> Upload valid."
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
