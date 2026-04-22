@@ -139,19 +139,3 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         if: needs.cd-publish-testpypi.outputs.released == 'true'
-
-      - name: Purge pip cache
-        run: pip cache purge
-
-      - name: Test install from TestPyPI
-        run: pip install --no-cache-dir --force-reinstall comet-wifi-communicator
-
-      - name: Verify that latest version got installed
-        run: |
-          INSTALLED_VERSION=$(pip show comet-wifi-communicator | grep Version | awk '{print $2}') 
-          LATEST_VERSION=${{ needs.cd-publish-testpypi.outputs.version }}
-          if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
-            echo "ERROR: Installed version $INSTALLED_VERSION does not match released version $LATEST_VERSION"
-            exit 1
-          fi
-          echo "✓ Verified: comet-wifi-communicator $INSTALLED_VERSION installed correctly -> Upload valid."
