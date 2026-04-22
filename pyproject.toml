@@ -31,7 +31,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/"
+Homepage = "https://github.com/zerog981/Comet-WiFi-Communicator"
 Issues = "https://github.com/"
 
 [tool.pytest.ini_options]
