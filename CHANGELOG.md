@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.4.0 (2026-04-22)
+
+### Bug Fixes
+
+- Job condition
+  ([`b40f424`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/b40f424d6acdba5d08358ad2b0682ce721f00685))
+
+### Features
+
+- Separate jobs
+  ([`2c5f16a`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/2c5f16ae0a85d341137e6ee32bee70fd13058fc1))
+
+
 ## v0.3.0 (2026-04-22)
 
 ### Features
