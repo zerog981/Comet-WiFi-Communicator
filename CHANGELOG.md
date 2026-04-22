@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.2 (2026-04-22)
+
+### Bug Fixes
+
+- Typo
+  ([`e020fd6`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/e020fd6bc2f9f063a956acb59757263c652475ce))
+
+
 ## v0.2.1 (2026-04-22)
 
 ### Bug Fixes
