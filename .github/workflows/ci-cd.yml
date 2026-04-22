@@ -33,13 +33,16 @@ jobs:
       - name: Run unit tests
         run: python -m pytest -v --cov=src --cov-fail-under=90 --cov-report=term-missing
 
-  cd:
+  cd-build:
     permissions:
       contents: write
-      id-token: write
+      #id-token: write
     needs: ci
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      released: ${{ steps.release.outputs.released }}
 
     steps:
       - name: Check-out repository
@@ -59,12 +62,31 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        if: steps.release.outputs.released == 'true'
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  cd-publish-testpypi:
+    permissions:
+      id-token: write
+    needs: cd-build
+    if: steps.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: python-package-distributions
+          path: dist/
+
       - name: Publish package TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         if: steps.release.outputs.released == 'true'
         with:
           repository-url: https://test.pypi.org/legacy/
-          #password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 
       - name: Test install from TestPyPI
         run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple comet-wifi-communicator
@@ -79,8 +101,32 @@ jobs:
           fi
           echo "✓ Verified: comet-wifi-communicator $INSTALLED_VERSION installed correctly -> Upload valid."
 
+  cd-publish-pypi:
+    permissions:
+      id-token: write
+    needs: cd-publish-testpypi
+    if: steps.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: python-package-distributions
+          path: dist/
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         if: steps.release.outputs.released == 'true'
-        #with:
-          #password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Test install from TestPyPI
+        run: pip install comet-wifi-communicator
+
+      - name: Verify that latest version got installed
+        run: |
+          INSTALLED_VERSION=$(pip show comet-wifi-communicator | grep Version | awk '{print $2}') 
+          LATEST_VERSION=${{ steps.release.outputs.version }}
+          if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
+            echo "ERROR: Installed version $INSTALLED_VERSION does not match released version $LATEST_VERSION"
+            exit 1
+          fi
+          echo "✓ Verified: comet-wifi-communicator $INSTALLED_VERSION installed correctly -> Upload valid."
