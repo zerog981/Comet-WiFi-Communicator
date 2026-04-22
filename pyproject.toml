@@ -59,4 +59,4 @@ version_toml = ["pyproject.toml:project.version"]
 branch = 'main'
 changelog_file = 'CHANGELOG.md'
 build_commands = 'python -m pip install -r requirements_dev.txt && python -m build'
-allow_zero_version = "True"
+allow_zero_version = true
