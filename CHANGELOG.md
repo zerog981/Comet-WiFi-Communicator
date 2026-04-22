@@ -2,6 +2,31 @@
 
 <!-- version list -->
 
+## v0.1.0 (2026-04-22)
+
+### Bug Fixes
+
+- Missing version in cd
+  ([`123386b`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/123386bbc9f24ac67d9a04696ce65a04d9461bdd))
+
+- Typo
+  ([`590772a`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/590772accd11b27c18eee6f0cbaeeb90f6b93371))
+
+- Typo in cd condition
+  ([`98da947`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/98da94708465f9d74ed42edccb799d283dc164e6))
+
+- Typo in cd condition
+  ([`d5909e4`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/d5909e428e18c11cf6f5cd346171b53138422804))
+
+### Features
+
+- Add release to PyPI
+  ([`9cf1c24`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/9cf1c24763a1dc41dda583e4a6058e20f7108647))
+
+- Automatically release to TestPyPI
+  ([`38cc78a`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/38cc78ac3593e9f279ca18f2b8aefabcc11e3f32))
+
+
 ## v0.0.9 (2026-04-20)
 
 ### Bug Fixes
