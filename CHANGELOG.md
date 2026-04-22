@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.3.0 (2026-04-22)
+
+### Features
+
+- Use trusted publisher instead of token
+  ([`17ca6a6`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/17ca6a634cc54f1090e73bbcbeb35fccaf58e3b0))
+
+
 ## v0.2.4 (2026-04-22)
 
 
