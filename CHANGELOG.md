@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.3 (2026-04-22)
+
+### Bug Fixes
+
+- Wrong package
+  ([`c9a6007`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/c9a6007c9116f7708a368fcc928c6d7ee224fab2))
+
+
 ## v0.2.2 (2026-04-22)
 
 ### Bug Fixes
