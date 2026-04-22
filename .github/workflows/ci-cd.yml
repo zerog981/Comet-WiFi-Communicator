@@ -97,8 +97,8 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
 
-      - name: Wait for 30 seconds
-        run: sleep 30
+      - name: Purge pip cache
+        run: pip cache purge
 
       - name: Test install from TestPyPI
         run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple --no-cache-dir --force-reinstall comet-wifi-communicator
@@ -140,8 +140,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         if: needs.cd-publish-testpypi.outputs.released == 'true'
 
-      - name: Wait for 30 seconds
-        run: sleep 30
+      - name: Purge pip cache
+        run: pip cache purge
 
       - name: Test install from TestPyPI
         run: pip install --no-cache-dir --force-reinstall comet-wifi-communicator
