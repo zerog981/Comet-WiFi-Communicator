@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.6 (2026-04-22)
+
+### Bug Fixes
+
+- PIP not using latest index
+  ([`030ba81`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/030ba81846a56a1c4830f2c509fdaf9f2e3be2ff))
+
+
 ## v0.4.5 (2026-04-22)
 
 ### Bug Fixes
