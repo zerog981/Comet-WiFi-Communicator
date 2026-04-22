@@ -38,7 +38,7 @@ jobs:
       contents: write
       id-token: write
     needs: ci
-    if: github.event_name == 'push' && github.refs == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu_latest
 
     steps:
