@@ -34,6 +34,16 @@ from src.comet_wifi_communicator.mqtt_topics import MqttTopics
 
 
 @dataclass
+class ThermostatData:
+    """Holds data for thermostat."""
+    temperature_setpoint: float = 0.0
+    temperature_ambient: float = 0.0
+    temperature_offset: float = 0.0
+    window_open: bool = False
+    battery_level: float = 0.0
+    is_heating: bool = False
+
+@dataclass
 class ThermostatConfig:
     """Class for holding thermostat configuration."""
     _key_lock: bool = False
@@ -92,14 +102,7 @@ class Thermostat:
         self._mqtt_port = mqtt_port
         self._connected = False
         self._topics = MqttTopics(self._mac)
-        self._values = {
-            "temperature_setpoint": 0.0,
-            "temperature_ambient": 0.0,
-            "temperature_offset": 0.0,
-            "window_open": False,
-            "is_heating": False,
-            "battery_level": 0,
-        }
+        self._data = ThermostatData()
 
         self._mqtt_client = Client()
         self._mqtt_client.on_connect = self._on_mqtt_connect
@@ -119,27 +122,27 @@ class Thermostat:
 
     @property
     def setpoint(self) -> float:
-        return self._values["temperature_setpoint"]
+        return self._data.temperature_setpoint
 
     @property
     def temperature_ambient(self) -> float:
-        return self._values["temperature_ambient"]
+        return self._data.temperature_ambient
 
     @property
     def temperature_offset(self) -> float:
-        return self._values["temperature_offset"]
+        return self._data.temperature_offset
 
     @property
     def is_heating(self) -> bool:
-        return self._values["is_heating"]
+        return self._data.is_heating
 
     @property
     def window_open(self) -> bool:
-        return self._values["window_open"]
+        return self._data.window_open
 
     @property
     def battery_level(self) -> float:
-        return self._values["battery_level"]
+        return self._data.battery_level
 
     @property
     def mac(self) -> str:
@@ -167,7 +170,7 @@ class Thermostat:
             return
 
         if message.topic == self._topics.reply_topics["TEMPERATURE_AMBIENT"]:
-            self._values["temperature_ambient"] = convert_temperature_to_float(
+            self._data.temperature_ambient = convert_temperature_to_float(
                 message.payload.decode("utf-8")
             )
             return
@@ -175,20 +178,20 @@ class Thermostat:
         if message.topic == self._topics.reply_topics["TEMPERATURE_SETPOINT"]:
             payload = message.payload.decode("utf-8")
             if payload == f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}":
-                self._values["is_heating"] = False
-                self._values["temperature_setpoint"] = TEMPERATURE_SETPOINT_MIN
+                self._data.is_heating = False
+                self._data.temperature_setpoint = TEMPERATURE_SETPOINT_MIN
                 return
             if payload == f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}":
-                self._values["temperature_setpoint"] = TEMPERATURE_SETPOINT_MAX
+                self._data.temperature_setpoint = TEMPERATURE_SETPOINT_MAX
             else:
-                self._values["temperature_setpoint"] = convert_temperature_to_float(
+                self._data.temperature_setpoint = convert_temperature_to_float(
                     payload
                 )
-            self._values["is_heating"] = True
+            self._data.is_heating = True
             return
 
         if message.topic == self._topics.reply_topics["BATTERY"]:
-            self._values["battery_level"] = convert_hex_to_int(
+            self._data.battery_level = convert_hex_to_int(
                 message.payload.decode("utf-8")
             )
             return
