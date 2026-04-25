@@ -4,6 +4,7 @@ import time
 from dataclasses import dataclass
 
 from paho.mqtt.client import CONNACK_ACCEPTED, Client
+from paho.mqtt.enums import CallbackAPIVersion
 
 from comet_wifi_communicator import const
 from comet_wifi_communicator.const import (
@@ -102,7 +103,7 @@ class Thermostat:
         self._data = ThermostatData()
         self.config = ThermostatConfig()
 
-        self._mqtt_client = Client()
+        self._mqtt_client = Client(callback_api_version=CallbackAPIVersion.VERSION2)
         self._mqtt_client.on_connect = self._on_mqtt_connect
         self._mqtt_client.on_message = self._on_mqtt_message
 
