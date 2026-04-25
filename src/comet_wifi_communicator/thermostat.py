@@ -24,6 +24,10 @@ from comet_wifi_communicator.const import (
     TEMPERATURE_SETPOINT_MAX,
     TEMPERATURE_SETPOINT_MIN,
     CFG_PAYLOAD_LENGTH,
+    CFG_KEY_LOCK_PLUS,
+    CFG_KEY_LOCK,
+    CFG_MIRRORED_DISPLAY,
+    CFG_DST,
 )
 from comet_wifi_communicator.helper import (
     convert_hex_to_int,
@@ -66,14 +70,23 @@ class ThermostatConfig:
 
     @property
     def display_mirrored(self) -> bool:
+        """Return display mirrored status."""
         return self._display_mirrored
 
     @property
     def dst(self) -> bool:
+        """Return daylight savings time (DST) status."""
         return self._dst
 
-    def update_config(self, config: int):
-        pass
+    def write_config(self, config_byte: int) -> None:
+        """
+        Update configuration based on configuration byte received from thermostat.
+        :param config_byte: Configuration byte as received from thermostat. Bit 0 is DST, Bit 1 is Mirrored Display, Bit 2 is Key Lock, and Bit 3 is Key Lock Plus.
+        """
+        self._key_lock_plus = bool(config_byte & CFG_KEY_LOCK_PLUS)
+        self._key_lock = bool(config_byte & CFG_KEY_LOCK)
+        self._display_mirrored = bool(config_byte & CFG_MIRRORED_DISPLAY)
+        self._dst = bool(config_byte & CFG_DST)
 
 
 class Thermostat:
@@ -87,6 +100,7 @@ class Thermostat:
         self._connected = False
         self._topics = MqttTopics(self._mac)
         self._data = ThermostatData()
+        self.config = ThermostatConfig()
 
         self._mqtt_client = Client()
         self._mqtt_client.on_connect = self._on_mqtt_connect
@@ -180,6 +194,13 @@ class Thermostat:
             )
             return
 
+        if message.topic == self._topics.reply_topics["CONFIGURATION"]:
+            payload = message.payload.decode("utf-8")
+            raw_data = int(payload.lstrip(HEX_PREFIX), 16)
+            config_byte = raw_data >> 8 & 0xFF
+            self.config.write_config(config_byte)
+            return
+
     def _publish_connection_test(self):
         self._mqtt_client.publish(
             self._topics.command_topics["CONNECTION_TEST"], const.CONNECTION_TEST_COMMAND
@@ -202,7 +223,7 @@ class Thermostat:
         Use this function to fetch setpoint temperature, ambient temperature, battery level,
         configuration parameters, open window settings etc. Supply the constants in the form REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_WIFI_SIGNAL_STRENGTH
 
-        :return: Nothing
+        :return: None
         """
         request_str = f"{HEX_PREFIX}{request_value:08X}"
         self._mqtt_client.publish(
@@ -234,11 +255,44 @@ class Thermostat:
         await self.update_values(REQUEST_CONFIG)
 
     async def _config_enable(self, values: int = 0x0000):
-        # Payload has five bytes with first byte containing activate flags
+        # Payload has five bytes with first byte containing enable flags
         config_payload = f"{HEX_PREFIX}{values:02X}{'0' * ((CFG_PAYLOAD_LENGTH - 1) * 2)}"
         self._mqtt_client.publish(
             self._topics.command_topics["WRITE_CONFIGURATION"], config_payload
         )
+        await self.update_config()
+        
+    async def _config_disable(self, values: int = 0x0000):
+        # Payload has five bytes with second byte containing disable flags
+        config_payload = f"{HEX_PREFIX}{'0' * 2}{values:02X}{'0' * ((CFG_PAYLOAD_LENGTH - 2) * 2)}"
+        self._mqtt_client.publish(
+            self._topics.command_topics["WRITE_CONFIGURATION"], config_payload
+        )
+        await self.update_config()
+        
+    async def enable_key_lock_plus(self):
+        await self._config_enable(CFG_KEY_LOCK_PLUS)
+        
+    async def disable_key_lock_plus(self):
+        await self._config_disable(CFG_KEY_LOCK_PLUS)
+        
+    async def enable_key_lock(self):
+        await self._config_enable(CFG_KEY_LOCK)
+    
+    async def disable_key_lock(self):
+        await self._config_disable(CFG_KEY_LOCK)
+        
+    async def enable_mirrored_display(self):
+        await self._config_enable(CFG_MIRRORED_DISPLAY)
+    
+    async def disable_mirrored_display(self):
+        await self._config_disable(CFG_MIRRORED_DISPLAY)
+        
+    async def enable_dst(self):
+        await self._config_enable(CFG_DST)
+    
+    async def disable_dst(self):
+        await self._config_disable(CFG_DST)
 
     async def set_temperature(self, temperature: float) -> None:
         if not self._connected:

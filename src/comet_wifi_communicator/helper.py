@@ -2,6 +2,8 @@
 
 import re
 
+from comet_wifi_communicator.const import HEX_PREFIX
+
 
 def convert_temperature_to_float(hex_value: str) -> float:
     """
@@ -21,7 +23,7 @@ def convert_temperature_to_hex(decimal: float) -> str:
     """
     decimal_int = int(decimal * 2.0) # If supplied value is different to .0 or .5, decimals will be cut after doubling
     hex_value = hex(decimal_int)[2:]  # Remove 0x prefix
-    return f"#{hex_value.upper()}"
+    return f"{HEX_PREFIX}{hex_value.upper()}"
 
 
 def convert_hex_to_int(hex_value: str) -> int:
@@ -30,7 +32,7 @@ def convert_hex_to_int(hex_value: str) -> int:
     :param hex_value: Raw hex value including "#", e.g. "#1B".
     :return: Integer value as decimal number, e.g. 27.
     """
-    hex_value = hex_value.lstrip("#")
+    hex_value = hex_value.lstrip(HEX_PREFIX)
     return int(hex_value, 16)
 
 
