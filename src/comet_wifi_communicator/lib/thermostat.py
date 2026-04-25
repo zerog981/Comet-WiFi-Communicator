@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 from paho.mqtt.client import CONNACK_ACCEPTED, Client
 
-from . import const
-from src.comet_wifi_communicator.const import (
+from comet_wifi_communicator.lib import const
+from comet_wifi_communicator.lib.const import (
     CONNECTION_TEST_TIMEOUT,
     HEX_PREFIX,
     REQUEST_BASE_SOFTWARE_VERSION,
@@ -24,13 +24,13 @@ from src.comet_wifi_communicator.const import (
     TEMPERATURE_SETPOINT_MAX,
     TEMPERATURE_SETPOINT_MIN,
 )
-from src.comet_wifi_communicator.helper import (
+from comet_wifi_communicator.lib.helper import (
     convert_hex_to_int,
     convert_temperature_to_float,
     convert_temperature_to_hex,
     validate_and_streamline_mac,
 )
-from src.comet_wifi_communicator.mqtt_topics import MqttTopics
+from comet_wifi_communicator.lib.mqtt_topics import MqttTopics
 
 
 @dataclass
@@ -58,37 +58,20 @@ class ThermostatConfig:
         """Return key lock status."""
         return self._key_lock
 
-    @key_lock.setter
-    def key_lock(self, value: bool) -> None:
-        """Set key lock status."""
-        self._key_lock = value
-
     @property
     def key_lock_plus(self) -> bool:
         """Return key lock plus status."""
         return self._key_lock_plus
 
-    @key_lock_plus.setter
-    def key_lock_plus(self, value: bool) -> None:
-        self._key_lock_plus = value
-
     @property
     def display_mirrored(self) -> bool:
         return self._display_mirrored
-
-    @display_mirrored.setter
-    def display_mirrored(self, value: bool) -> None:
-        self._display_mirrored = value
 
     @property
     def dst(self) -> bool:
         return self._dst
 
-    @dst.setter
-    def dst(self, value: bool) -> None:
-        self._dst = value
-
-    def _update_hex_string(self):
+    def update_config(self, config: int):
         pass
 
 
@@ -245,6 +228,10 @@ class Thermostat:
             | REQUEST_TEMPERATURE_AMBIENT
             | REQUEST_TEMPERATURE_OFFSET
         )  # TODO: Add window open
+
+    async def config_enable(self, values: int = 0x0000):
+
+        pass
 
     async def set_temperature(self, temperature: float) -> None:
         if not self._connected:

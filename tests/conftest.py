@@ -13,7 +13,7 @@ def mock_mqtt_client():
 @pytest.fixture
 def thermostat(mock_mqtt_client):
     """Create a Thermostat instance with mocked MQTT client."""
-    from src.comet_wifi_communicator.thermostat import Thermostat
+    from comet_wifi_communicator.lib.thermostat import Thermostat
 
     return Thermostat(
         mqtt_host="192.168.1.100",
