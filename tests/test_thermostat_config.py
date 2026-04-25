@@ -1,6 +1,6 @@
 """Test ThermostatConfig dataclass."""
 
-from comet_wifi_communicator.lib.thermostat import ThermostatConfig
+from comet_wifi_communicator.thermostat import ThermostatConfig
 
 
 class TestThermostatConfig:

@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import Mock
 from paho.mqtt.client import CONNACK_ACCEPTED
-from comet_wifi_communicator.lib.thermostat import MQTTConnectError
+from src.comet_wifi_communicator.thermostat import MQTTConnectError
 
 
 class TestMqttConnection:

@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 from paho.mqtt.client import CONNACK_ACCEPTED, Client
 
-from comet_wifi_communicator.lib import const
-from comet_wifi_communicator.lib.const import (
+from comet_wifi_communicator import const
+from comet_wifi_communicator.const import (
     CONNECTION_TEST_TIMEOUT,
     HEX_PREFIX,
     REQUEST_BASE_SOFTWARE_VERSION,
@@ -23,14 +23,15 @@ from comet_wifi_communicator.lib.const import (
     TEMPERATURE_HEX_ON,
     TEMPERATURE_SETPOINT_MAX,
     TEMPERATURE_SETPOINT_MIN,
+    CFG_PAYLOAD_LENGTH,
 )
-from comet_wifi_communicator.lib.helper import (
+from comet_wifi_communicator.helper import (
     convert_hex_to_int,
     convert_temperature_to_float,
     convert_temperature_to_hex,
     validate_and_streamline_mac,
 )
-from comet_wifi_communicator.lib.mqtt_topics import MqttTopics
+from comet_wifi_communicator.mqtt_topics import MqttTopics
 
 
 @dataclass
@@ -229,9 +230,15 @@ class Thermostat:
             | REQUEST_TEMPERATURE_OFFSET
         )  # TODO: Add window open
 
-    async def config_enable(self, values: int = 0x0000):
+    async def update_config(self):
+        await self.update_values(REQUEST_CONFIG)
 
-        pass
+    async def _config_enable(self, values: int = 0x0000):
+        # Payload has five bytes with first byte containing activate flags
+        config_payload = f"{HEX_PREFIX}{values:02X}{'0' * ((CFG_PAYLOAD_LENGTH - 1) * 2)}"
+        self._mqtt_client.publish(
+            self._topics.command_topics["WRITE_CONFIGURATION"], config_payload
+        )
 
     async def set_temperature(self, temperature: float) -> None:
         if not self._connected:

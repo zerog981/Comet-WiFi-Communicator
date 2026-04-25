@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from comet_wifi_communicator.lib.const import (
+from comet_wifi_communicator.const import (
     CONNECTION_TEST_TIMEOUT,
     HEX_PREFIX,
     TEMPERATURE_HEX_OFF,
