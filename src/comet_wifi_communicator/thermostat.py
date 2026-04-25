@@ -56,8 +56,6 @@ class ThermostatConfig:
     _display_mirrored: bool = False
     _dst: bool = False
 
-    _hex_string: str = "#0000"
-
     @property
     def key_lock(self) -> bool:
         """Return key lock status."""
@@ -83,6 +81,8 @@ class ThermostatConfig:
         Update configuration based on configuration byte received from thermostat.
         :param config_byte: Configuration byte as received from thermostat. Bit 0 is DST, Bit 1 is Mirrored Display, Bit 2 is Key Lock, and Bit 3 is Key Lock Plus.
         """
+        if config_byte < 0:
+            raise ValueError("Invalid configuration byte.")
         self._key_lock_plus = bool(config_byte & CFG_KEY_LOCK_PLUS)
         self._key_lock = bool(config_byte & CFG_KEY_LOCK)
         self._display_mirrored = bool(config_byte & CFG_MIRRORED_DISPLAY)
@@ -255,6 +255,8 @@ class Thermostat:
         await self.update_values(REQUEST_CONFIG)
 
     async def _config_enable(self, values: int = 0x0000):
+        if not self._connected:
+            raise ConnectionError()
         # Payload has five bytes with first byte containing enable flags
         config_payload = f"{HEX_PREFIX}{values:02X}{'0' * ((CFG_PAYLOAD_LENGTH - 1) * 2)}"
         self._mqtt_client.publish(
@@ -263,6 +265,8 @@ class Thermostat:
         await self.update_config()
         
     async def _config_disable(self, values: int = 0x0000):
+        if not self._connected:
+            raise ConnectionError()
         # Payload has five bytes with second byte containing disable flags
         config_payload = f"{HEX_PREFIX}{'0' * 2}{values:02X}{'0' * ((CFG_PAYLOAD_LENGTH - 2) * 2)}"
         self._mqtt_client.publish(
