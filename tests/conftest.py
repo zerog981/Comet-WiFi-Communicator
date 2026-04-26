@@ -1,9 +1,10 @@
 """Shared pytest configuration and fixtures."""
 
-import pytest
 from unittest.mock import patch
 
-from src.comet_wifi_communicator.thermostat import ThermostatConfig
+import pytest
+
+from comet_wifi_communicator.thermostat import Thermostat, ThermostatConfig
 
 
 @pytest.fixture
@@ -15,7 +16,7 @@ def mock_mqtt_client():
 @pytest.fixture
 def thermostat(mock_mqtt_client):
     """Create a Thermostat instance with mocked MQTT client."""
-    from src.comet_wifi_communicator.thermostat import Thermostat
+    
 
     return Thermostat(
         mqtt_host="192.168.1.100",

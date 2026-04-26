@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.comet_wifi_communicator.const import (
+from comet_wifi_communicator.const import (
     TEMPERATURE_HEX_OFF,
     TEMPERATURE_HEX_ON,
     HEX_PREFIX,

@@ -1,13 +1,12 @@
 """Test ThermostatConfig dataclass."""
 import pytest
 
-from src.comet_wifi_communicator.const import (
+from comet_wifi_communicator.const import (
     CFG_DST,
     CFG_MIRRORED_DISPLAY,
     CFG_KEY_LOCK,
     CFG_KEY_LOCK_PLUS,
 )
-from comet_wifi_communicator.thermostat import ThermostatConfig
 
 
 class TestThermostatConfig:
