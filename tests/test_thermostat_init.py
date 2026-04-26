@@ -1,7 +1,7 @@
 """Test Thermostat initialization."""
 
 import pytest
-from comet_wifi_communicator.thermostat import Thermostat
+from src.comet_wifi_communicator.thermostat import Thermostat
 
 
 class TestThermostatInit:

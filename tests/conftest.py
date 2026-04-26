@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import patch
 
-from comet_wifi_communicator.thermostat import ThermostatConfig
+from src.comet_wifi_communicator.thermostat import ThermostatConfig
 
 
 @pytest.fixture
