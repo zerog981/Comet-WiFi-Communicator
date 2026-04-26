@@ -3,6 +3,9 @@
 import pytest
 from unittest.mock import Mock
 from paho.mqtt.client import CONNACK_ACCEPTED
+from paho.mqtt.packettypes import PacketTypes
+from paho.mqtt.reasoncodes import ReasonCode
+
 from comet_wifi_communicator.thermostat import MQTTConnectError
 
 
@@ -12,9 +15,9 @@ class TestMqttConnection:
     def test_on_mqtt_connect_success(self, thermostat):
         """Successful connection subscribes to all reply topics."""
         mock_client = Mock()
-        reason_code = CONNACK_ACCEPTED
+        reason_code = ReasonCode(PacketTypes.CONNACK, aName="Success")
 
-        thermostat._on_mqtt_connect(mock_client, None, None, reason_code.value)
+        thermostat._on_mqtt_connect(mock_client, None, None, reason_code)
 
         assert (
             mock_client.subscribe.call_count == len(thermostat._topics.reply_topics) + 1
@@ -24,7 +27,8 @@ class TestMqttConnection:
         """Connection failure (reason_code != 0) raises MQTTConnectError."""
         mock_client = Mock()
         with pytest.raises(MQTTConnectError):
-            thermostat._on_mqtt_connect(mock_client, None, None, reason_code=1)
+            rc = ReasonCode(PacketTypes.CONNACK, aName="Server unavailable") # Server unavailable
+            thermostat._on_mqtt_connect(mock_client, None, None, reason_code=rc)
 
     @pytest.mark.asyncio
     async def test_connect_starts_loop(self, thermostat, mock_mqtt_client):
