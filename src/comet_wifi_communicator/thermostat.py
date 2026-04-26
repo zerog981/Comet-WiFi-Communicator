@@ -8,6 +8,11 @@ from paho.mqtt.enums import CallbackAPIVersion
 
 from comet_wifi_communicator import const
 from comet_wifi_communicator.const import (
+    CFG_DST,
+    CFG_KEY_LOCK,
+    CFG_KEY_LOCK_PLUS,
+    CFG_MIRRORED_DISPLAY,
+    CFG_PAYLOAD_LENGTH,
     CONNECTION_TEST_TIMEOUT,
     HEX_PREFIX,
     REQUEST_BASE_SOFTWARE_VERSION,
@@ -24,11 +29,6 @@ from comet_wifi_communicator.const import (
     TEMPERATURE_HEX_ON,
     TEMPERATURE_SETPOINT_MAX,
     TEMPERATURE_SETPOINT_MIN,
-    CFG_PAYLOAD_LENGTH,
-    CFG_KEY_LOCK_PLUS,
-    CFG_KEY_LOCK,
-    CFG_MIRRORED_DISPLAY,
-    CFG_DST,
 )
 from comet_wifi_communicator.helper import (
     convert_hex_to_int,
@@ -148,7 +148,7 @@ class Thermostat:
         return self._mac
 
     def _on_mqtt_connect(self, client, userdata, flags, reason_code, properties=None):
-        if reason_code is not CONNACK_ACCEPTED.value:
+        if reason_code.is_failure:
             raise MQTTConnectError
         # Subscribe from on_connect to be sure that subscription is persisted across reconnections
         for topic in self._topics.reply_topics.values():
