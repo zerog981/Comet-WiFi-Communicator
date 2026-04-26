@@ -40,6 +40,7 @@ Homepage = "https://github.com/zerog981/Comet-WiFi-Communicator"
 Issues = "https://github.com/"
 
 [tool.pytest.ini_options]
+pythonpath = ["src"]
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
