@@ -208,12 +208,22 @@ class Thermostat:
         )
         self._last_connection_test_published = time.time()
 
-    async def connect(self):
+    async def connect(self) -> None:
+        """Initiate connection to MQTT broker.
+
+        Initiates connection to MQTT broker and requests all standard parameters from thermostat.
+
+        """
         self._mqtt_client.connect(self._mqtt_host, self._mqtt_port)
         self._mqtt_client.loop_start()
         await self.update_standard_values()
 
     async def disconnect(self):
+        """Disconnect from MQTT broker.
+
+        Disconnect from MQTT broker.
+
+        """
         self._mqtt_client.disconnect()
         self._mqtt_client.loop_stop()
         self._connected = False
