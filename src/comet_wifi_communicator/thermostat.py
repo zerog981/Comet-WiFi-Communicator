@@ -3,7 +3,7 @@
 import time
 from dataclasses import dataclass
 
-from paho.mqtt.client import CONNACK_ACCEPTED, Client
+from paho.mqtt.client import Client
 from paho.mqtt.enums import CallbackAPIVersion
 
 from comet_wifi_communicator import const
@@ -30,6 +30,7 @@ from comet_wifi_communicator.const import (
     TEMPERATURE_SETPOINT_MAX,
     TEMPERATURE_SETPOINT_MIN,
 )
+from comet_wifi_communicator.enums import WindowOpenSensitivity
 from comet_wifi_communicator.helper import (
     convert_hex_to_int,
     convert_temperature_to_float,
@@ -88,6 +89,12 @@ class ThermostatConfig:
         self._key_lock = bool(config_byte & CFG_KEY_LOCK)
         self._display_mirrored = bool(config_byte & CFG_MIRRORED_DISPLAY)
         self._dst = bool(config_byte & CFG_DST)
+
+@dataclass
+class ThermostatWindowOpenConfig:
+    """Class for holding thermostat window open configuration."""
+    sensitivity: WindowOpenSensitivity = WindowOpenSensitivity.LOW
+    off_time: int = 0
 
 
 class Thermostat:
