@@ -1,5 +1,5 @@
 """Helper functions."""
-
+import ipaddress
 import re
 
 from comet_wifi_communicator.const import HEX_PREFIX
@@ -11,7 +11,7 @@ def convert_temperature_to_float(hex_value: str) -> float:
     :param hex_value: Input temperature raw hex value including "#", e.g. "#1B".
     :return: Temperature value as decimal number, e.g. 13.5.
     """
-    decimal = convert_hex_to_int(hex_value)
+    decimal = convert_hex_str_to_int(hex_value)
     return decimal / 2.0
 
 
@@ -26,14 +26,64 @@ def convert_temperature_to_hex(decimal: float) -> str:
     return f"{HEX_PREFIX}{hex_value.upper()}"
 
 
-def convert_hex_to_int(hex_value: str) -> int:
+def convert_hex_str_to_int(hex_value: str) -> int:
     """
     Convert a hex value to int.
-    :param hex_value: Raw hex value including "#", e.g. "#1B".
+    :param hex_value: Raw hex value, e.g. "1B".
     :return: Integer value as decimal number, e.g. 27.
     """
-    hex_value = hex_value.lstrip(HEX_PREFIX)
     return int(hex_value, 16)
+
+def char_to_unicode(char: str) -> str:
+    """
+    Convert a character to its Unicode hex representation.
+    :param char: Single character.
+    
+    :return: Unicode Hex string.
+    """
+    return format(ord(char), "x")
+
+
+def string_to_unicode(string: str, uppercase=False) -> str:
+    """
+    Convert a string to its Unicode hex representation.
+    :param string: Input string.
+    :param uppercase: Convert output letters to uppercase.
+
+    :return: Output Unicode hex representation string.
+    """
+    output = ""
+    for char in string:
+        output += char_to_unicode(char)
+    if uppercase:
+        return output.upper()
+    return output
+
+
+def int_to_hex_str(number: int, uppercase=False) -> str:
+    """
+    Converts an integer into a string in its hexadecimal representation.
+    :param number: Input integer.
+    :param uppercase: Convert output letters to uppercase.
+    :return:
+    """
+    output = format(number, "x")
+    if uppercase:
+        return output.upper()
+    return output
+
+def ip_to_hex_str(ip_str: str, uppercase=False) -> str:
+    """
+    Converts an IP string into its hex representation.
+    :param ip_str: IP address in string format, e.g. "192.168.0.2".
+    :param uppercase: Convert output letters to uppercase.
+    :return: String of IP in hex representation, e.g. "C0A80002".
+    """
+    ip = ipaddress.ip_address(ip_str) # Validate IP
+    ip_hex = ip.packed.hex()
+    if uppercase:
+        return ip_hex.upper()
+    return ip_hex
 
 
 def validate_and_streamline_mac(mac: str) -> str:

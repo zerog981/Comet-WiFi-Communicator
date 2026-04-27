@@ -32,7 +32,7 @@ from comet_wifi_communicator.const import (
 )
 from comet_wifi_communicator.enums import WindowOpenSensitivity
 from comet_wifi_communicator.helper import (
-    convert_hex_to_int,
+    convert_hex_str_to_int,
     convert_temperature_to_float,
     convert_temperature_to_hex,
     validate_and_streamline_mac,
@@ -197,9 +197,10 @@ class Thermostat:
             return
 
         if message.topic == self._topics.reply_topics["BATTERY"]:
-            self._data.battery_level = convert_hex_to_int(
-                message.payload.decode("utf-8")
+            self._data.battery_level = convert_hex_str_to_int(
+                message.payload.decode("utf-8").lstrip(HEX_PREFIX)
             )
+
             return
 
         if message.topic == self._topics.reply_topics["CONFIGURATION"]:
