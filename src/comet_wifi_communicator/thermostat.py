@@ -33,8 +33,8 @@ from comet_wifi_communicator.const import (
 from comet_wifi_communicator.enums import WindowOpenSensitivity
 from comet_wifi_communicator.helper import (
     convert_hex_str_to_int,
-    convert_temperature_to_float,
-    convert_temperature_to_hex,
+    convert_hex_temperature_to_float,
+    encode_temperature,
     validate_and_streamline_mac,
 )
 from comet_wifi_communicator.mqtt_topics import MqttTopics
@@ -176,23 +176,21 @@ class Thermostat:
             return
 
         if message.topic == self._topics.reply_topics["TEMPERATURE_AMBIENT"]:
-            self._data.temperature_ambient = convert_temperature_to_float(
-                message.payload.decode("utf-8")
+            self._data.temperature_ambient = convert_hex_temperature_to_float(
+                message.payload.decode("utf-8").lstrip(HEX_PREFIX)
             )
             return
 
         if message.topic == self._topics.reply_topics["TEMPERATURE_SETPOINT"]:
-            payload = message.payload.decode("utf-8")
-            if payload == f"{HEX_PREFIX}{TEMPERATURE_HEX_OFF:02X}":
+            payload = message.payload.decode("utf-8").lstrip(HEX_PREFIX)
+            if payload == f"{TEMPERATURE_HEX_OFF:02X}":
                 self._data.is_heating = False
                 self._data.temperature_setpoint = TEMPERATURE_SETPOINT_MIN
                 return
-            if payload == f"{HEX_PREFIX}{TEMPERATURE_HEX_ON:02X}":
+            if payload == f"{TEMPERATURE_HEX_ON:02X}":
                 self._data.temperature_setpoint = TEMPERATURE_SETPOINT_MAX
             else:
-                self._data.temperature_setpoint = convert_temperature_to_float(
-                    payload
-                )
+                self._data.temperature_setpoint = convert_hex_temperature_to_float(payload)
             self._data.is_heating = True
             return
 
@@ -324,7 +322,7 @@ class Thermostat:
             temperature = TEMPERATURE_SETPOINT_MAX
         if temperature < TEMPERATURE_SETPOINT_MIN:
             temperature = TEMPERATURE_SETPOINT_MIN
-        temperature_encoded = convert_temperature_to_hex(temperature)
+        temperature_encoded = f"{HEX_PREFIX}{encode_temperature(temperature):02X}"
         self._mqtt_client.publish(
             self._topics.command_topics["WRITE_TEMPERATURE_SETPOINT"],
             temperature_encoded,

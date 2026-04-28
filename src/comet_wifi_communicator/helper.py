@@ -5,25 +5,25 @@ import re
 from comet_wifi_communicator.const import HEX_PREFIX
 
 
-def convert_temperature_to_float(hex_value: str) -> float:
+def convert_hex_temperature_to_float(hex_value: str) -> float:
     """
     Convert a hex temperature value to float.
-    :param hex_value: Input temperature raw hex value including "#", e.g. "#1B".
+    :param hex_value: Input temperature raw hex value, e.g. "1B".
     :return: Temperature value as decimal number, e.g. 13.5.
     """
     decimal = convert_hex_str_to_int(hex_value)
     return decimal / 2.0
 
 
-def convert_temperature_to_hex(decimal: float) -> str:
+def encode_temperature(decimal: float) -> int:
     """
     Convert a temperature value to a raw hex value.
     :param decimal: Input temperature value, e.g. 13.5.
-    :return: Temperature value as hex string including "#", e.g. "#1B".
+    :return: Temperature value as hex string, e.g. "1B".
     """
-    decimal_int = int(decimal * 2.0) # If supplied value is different to .0 or .5, decimals will be cut after doubling
-    hex_value = hex(decimal_int)[2:]  # Remove 0x prefix
-    return f"{HEX_PREFIX}{hex_value.upper()}"
+    return int(decimal * 2.0) # If supplied value is different to .0 or .5, decimals will be cut after doubling
+    #hex_value = hex(decimal_int)[2:]  # Remove 0x prefix
+    #return f"{hex_value.upper()}"
 
 
 def convert_hex_str_to_int(hex_value: str) -> int:
