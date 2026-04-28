@@ -33,7 +33,7 @@ from comet_wifi_communicator.const import (
 from comet_wifi_communicator.enums import WindowOpenSensitivity
 from comet_wifi_communicator.helper import (
     convert_hex_str_to_int,
-    convert_hex_temperature_to_float,
+    decode_temperature,
     encode_temperature,
     validate_and_streamline_mac,
 )
@@ -176,7 +176,7 @@ class Thermostat:
             return
 
         if message.topic == self._topics.reply_topics["TEMPERATURE_AMBIENT"]:
-            self._data.temperature_ambient = convert_hex_temperature_to_float(
+            self._data.temperature_ambient = decode_temperature(
                 message.payload.decode("utf-8").lstrip(HEX_PREFIX)
             )
             return
@@ -190,7 +190,7 @@ class Thermostat:
             if payload == f"{TEMPERATURE_HEX_ON:02X}":
                 self._data.temperature_setpoint = TEMPERATURE_SETPOINT_MAX
             else:
-                self._data.temperature_setpoint = convert_hex_temperature_to_float(payload)
+                self._data.temperature_setpoint = decode_temperature(payload)
             self._data.is_heating = True
             return
 
