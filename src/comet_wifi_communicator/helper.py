@@ -9,7 +9,7 @@ def decode_temperature(hex_value: str) -> float:
     :param hex_value: Input temperature raw hex value, e.g. "1B".
     :return: Temperature value as decimal number, e.g. 13.5.
     """
-    decimal = convert_hex_str_to_int(hex_value)
+    decimal = hex_str_to_int(hex_value)
     return decimal / 2.0
 
 
@@ -25,13 +25,27 @@ def encode_temperature(decimal: float) -> int:
     return int(decimal * 2.0) # If supplied value is different to .0 or .5, decimals will be cut after doubling
 
 
-def convert_hex_str_to_int(hex_value: str) -> int:
+def hex_str_to_int(hex_value: str) -> int:
     """
     Convert a hex value to int.
     :param hex_value: Raw hex value, e.g. "1B".
     :return: Integer value as decimal number, e.g. 27.
     """
     return int(hex_value, 16)
+
+def int_to_hex_str(number: int, uppercase=False) -> str:
+    """
+    Converts an non-negative integer into a string in its hexadecimal representation.
+    :param number: Input integer.
+    :param uppercase: Convert output letters to uppercase.
+    :return:
+    """
+    if number < 0:
+        raise ValueError
+    output = format(number, "x")
+    if uppercase:
+        return output.upper()
+    return output
 
 def char_to_unicode(char: str) -> str:
     """
@@ -43,7 +57,7 @@ def char_to_unicode(char: str) -> str:
     """
     if len(char) != 1:
         raise ValueError(f"Expected a single character, got {char}.")
-    return f"{ord(char):02x}"
+    return f"{ord(char):x}"
 
 
 def string_to_unicode(string: str, uppercase=False) -> str:
@@ -61,18 +75,6 @@ def string_to_unicode(string: str, uppercase=False) -> str:
         return output.upper()
     return output
 
-
-def int_to_hex_str(number: int, uppercase=False) -> str:
-    """
-    Converts an integer into a string in its hexadecimal representation.
-    :param number: Input integer.
-    :param uppercase: Convert output letters to uppercase.
-    :return:
-    """
-    output = format(number, "x")
-    if uppercase:
-        return output.upper()
-    return output
 
 def ip_to_hex_str(ip_str: str, uppercase=False) -> str:
     """

@@ -4,9 +4,11 @@ import pytest
 
 from comet_wifi_communicator.helper import (
     decode_temperature,
-    convert_hex_str_to_int,
+    hex_str_to_int,
     encode_temperature,
     char_to_unicode,
+    string_to_unicode,
+    int_to_hex_str,
 )
 
 
@@ -78,8 +80,8 @@ class TestEncodeTemperature:
             encode_temperature(input)
 
 
-class TestConvertHexStrToInt:
-    """Tests for helper functions."""
+class TestHexStrToInt:
+    """Tests for hex_str_to_int helper."""
 
     @pytest.mark.parametrize("hex_input,expected", [
         ("1B", 27),
@@ -88,7 +90,7 @@ class TestConvertHexStrToInt:
     ])
     def test_basic(self, hex_input, expected):
         """Basic hex input."""
-        assert convert_hex_str_to_int(hex_input) == expected
+        assert hex_str_to_int(hex_input) == expected
 
     @pytest.mark.parametrize("hex_input,expected", [
         ("1b", 27),
@@ -96,7 +98,7 @@ class TestConvertHexStrToInt:
     ])
     def test_non_uppercase(self, hex_input, expected):
         """Lowercase hex input."""
-        assert convert_hex_str_to_int(hex_input) == expected
+        assert hex_str_to_int(hex_input) == expected
 
     @pytest.mark.parametrize("hex_input", [
         "GG",
@@ -106,7 +108,7 @@ class TestConvertHexStrToInt:
     def test_invalid_hex(self, hex_input):
         """Invalid hex characters should raise ValueError."""
         with pytest.raises(ValueError):
-            convert_hex_str_to_int(hex_input)
+            hex_str_to_int(hex_input)
 
     @pytest.mark.parametrize("hex_input", [
         None,
@@ -115,7 +117,51 @@ class TestConvertHexStrToInt:
     def test_invalid_type(self, hex_input):
         """Invalid input should raise TypeError."""
         with pytest.raises(TypeError):
-            convert_hex_str_to_int(hex_input)
+            hex_str_to_int(hex_input)
+
+
+class TestIntToHexStr:
+    """Tests for int_to_hex_str helper."""
+
+    @pytest.mark.parametrize("number,expected", [
+        (0, "0"),
+        (1, "1"),
+        (10, "a"),
+        (15, "f"),
+        (16, "10"),
+        (255, "ff"),
+        (256, "100"),
+        (4095, "fff"),
+        (65535, "ffff"),
+    ])
+    def test_int_to_hex_str(self, number, expected):
+        """Convert various integers to hex string."""
+        assert int_to_hex_str(number) == expected
+
+    def test_uppercase_flag_true(self):
+        """Uppercase flag should convert hex letters to uppercase."""
+        result = int_to_hex_str(255, uppercase=True)
+        assert result == "FF"
+
+    def test_uppercase_flag_false(self):
+        """Uppercase flag false should keep lowercase hex."""
+        result = int_to_hex_str(255, uppercase=False)
+        assert result == "ff"
+
+    def test_uppercase_default_is_false(self):
+        """Uppercase parameter defaults to False."""
+        result = int_to_hex_str(255)
+        assert result == result.lower()
+
+    def test_return_type_is_string(self):
+        """Result should always be a string."""
+        result = int_to_hex_str(255)
+        assert isinstance(result, str)
+
+    def test_negative_number(self):
+        """Negative numbers should raise ValueError."""
+        with pytest.raises(ValueError):
+            int_to_hex_str(-1)
 
 
 class TestCharToUnicode:
@@ -128,8 +174,8 @@ class TestCharToUnicode:
         (" ", "20"),
         ("!", "21"),
         ("€", "20ac"),
-        ("\n", "0a"),
-        ("\t", "09"),
+        ("\n", "a"),
+        ("\t", "9"),
     ])
     def test_char_to_unicode(self, char, expected):
         """Convert various characters to Unicode hex."""
@@ -146,8 +192,8 @@ class TestCharToUnicode:
         assert result == result.lower()
 
     def test_null_character(self):
-        """Null character should return '00'."""
-        assert char_to_unicode("\x00") == "00"
+        """Null character should return '0'."""
+        assert char_to_unicode("\x00") == "0"
 
     def test_multi_char_input(self):
         """Multi-char raises exception."""
@@ -159,3 +205,38 @@ class TestCharToUnicode:
         with pytest.raises(ValueError):
             char_to_unicode("")
 
+
+class TestStringToUnicode:
+    """Tests for string_to_unicode helper."""
+
+    @pytest.mark.parametrize("string,expected", [
+        ("A", "41"),
+        ("AB", "4142"),
+        ("Hello", "48656c6c6f"),
+        ("123", "313233"),
+        ("", "")
+    ])
+    def test_string_to_unicode(self, string, expected):
+        """Convert various strings to Unicode hex."""
+        assert string_to_unicode(string) == expected
+
+    def test_uppercase_flag_true(self):
+        """Uppercase flag should convert hex letters to uppercase."""
+        result = string_to_unicode("café", uppercase=True)
+        assert result == result.upper()
+        assert "E9" in result  # é in hex
+
+    def test_uppercase_flag_false(self):
+        """Uppercase flag false should keep lowercase hex."""
+        result = string_to_unicode("café", uppercase=False)
+        assert result == result.lower()
+
+    def test_uppercase_default_is_false(self):
+        """Uppercase parameter defaults to False."""
+        result = string_to_unicode("café")
+        assert result == result.lower()
+
+    def test_return_type_is_string(self):
+        """Result should always be a string."""
+        result = string_to_unicode("A")
+        assert isinstance(result, str)
