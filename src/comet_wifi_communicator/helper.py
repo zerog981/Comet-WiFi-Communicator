@@ -18,9 +18,10 @@ def encode_temperature(decimal: float) -> int:
     Convert a non-negative temperature value to a raw hex value.
     :param decimal: Input temperature value, e.g. 13.5.
     :return: Temperature value as hex string, e.g. "1B".
+    :raises ValueError: If negative temperature is supplied.
     """
     if decimal < 0:
-        raise ValueError
+        raise ValueError("Negative temperature.")
     return int(decimal * 2.0) # If supplied value is different to .0 or .5, decimals will be cut after doubling
 
 
@@ -38,8 +39,11 @@ def char_to_unicode(char: str) -> str:
     :param char: Single character.
     
     :return: Unicode Hex string.
+    :raises ValueError: If multi-character is supplied.
     """
-    return format(ord(char), "x")
+    if len(char) != 1:
+        raise ValueError(f"Expected a single character, got {char}.")
+    return f"{ord(char):02x}"
 
 
 def string_to_unicode(string: str, uppercase=False) -> str:

@@ -6,6 +6,7 @@ from comet_wifi_communicator.helper import (
     decode_temperature,
     convert_hex_str_to_int,
     encode_temperature,
+    char_to_unicode,
 )
 
 
@@ -115,4 +116,46 @@ class TestConvertHexStrToInt:
         """Invalid input should raise TypeError."""
         with pytest.raises(TypeError):
             convert_hex_str_to_int(hex_input)
+
+
+class TestCharToUnicode:
+    """Test function for char_to_unicode helper."""
+
+    @pytest.mark.parametrize("char,expected", [
+        ("A", "41"),
+        ("a", "61"),
+        ("0", "30"),
+        (" ", "20"),
+        ("!", "21"),
+        ("€", "20ac"),
+        ("\n", "0a"),
+        ("\t", "09"),
+    ])
+    def test_char_to_unicode(self, char, expected):
+        """Convert various characters to Unicode hex."""
+        assert char_to_unicode(char) == expected
+
+    def test_return_type_is_string(self):
+        """Result should always be a string."""
+        result = char_to_unicode("A")
+        assert isinstance(result, str)
+
+    def test_lowercase_hex_output(self):
+        """Hex output should be lowercase."""
+        result = char_to_unicode("A")
+        assert result == result.lower()
+
+    def test_null_character(self):
+        """Null character should return '00'."""
+        assert char_to_unicode("\x00") == "00"
+
+    def test_multi_char_input(self):
+        """Multi-char raises exception."""
+        with pytest.raises(ValueError):
+            char_to_unicode("ABC")
+
+    def test_empty_string_raises_error(self):
+        """Empty string should raise ValueError on empty."""
+        with pytest.raises(ValueError):
+            char_to_unicode("")
 
