@@ -15,10 +15,12 @@ def decode_temperature(hex_value: str) -> float:
 
 def encode_temperature(decimal: float) -> int:
     """
-    Convert a temperature value to a raw hex value.
+    Convert a non-negative temperature value to a raw hex value.
     :param decimal: Input temperature value, e.g. 13.5.
     :return: Temperature value as hex string, e.g. "1B".
     """
+    if decimal < 0:
+        raise ValueError
     return int(decimal * 2.0) # If supplied value is different to .0 or .5, decimals will be cut after doubling
 
 

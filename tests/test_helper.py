@@ -5,11 +5,13 @@ import pytest
 from comet_wifi_communicator.helper import (
     decode_temperature,
     convert_hex_str_to_int,
+    encode_temperature,
 )
 
 
 class TestDecodeTemperature:
-    """Tests for encode temperature for thermostats."""
+    """Tests for decoding temperature from thermostats."""
+
     @pytest.mark.parametrize("hex_input,expected_temperature", [
         ("10", 8),
         ("1F", 15.5),
@@ -42,6 +44,37 @@ class TestDecodeTemperature:
         with pytest.raises(TypeError):
             decode_temperature(hex_input)
 
+
+class TestEncodeTemperature:
+    """Tests for encoding temperature for thermostats."""
+
+    @pytest.mark.parametrize(
+        "temperature,expected",
+        [
+            (8, 0x10),
+            (15.5, 0x1F),
+            (28, 0x38),
+            (15.6, 0x1F),  # Cut decimals, if not .5
+            (15.9, 0x1F),  # Cut decimals, if not .5
+        ],
+    )
+    def test_basic(self, temperature, expected):
+        """Test basic functionality"""
+        assert encode_temperature(temperature) == expected
+
+    def test_negative(self):
+        """Lowercase hex input."""
+        with pytest.raises(ValueError):
+            encode_temperature(-10)
+
+    @pytest.mark.parametrize("input", [
+        None,
+        "27",
+    ])
+    def test_invalid_type(self, input):
+        """Invalid input should raise TypeError."""
+        with pytest.raises(TypeError):
+            encode_temperature(input)
 
 
 class TestConvertHexStrToInt:
