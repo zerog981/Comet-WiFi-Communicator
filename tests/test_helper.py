@@ -11,6 +11,7 @@ from comet_wifi_communicator.helper import (
     int_to_hex_str,
     ip_to_hex_str,
     IPv6NotAllowed,
+    validate_and_streamline_mac,
 )
 
 
@@ -311,3 +312,66 @@ class TestIpToHexStr:
         """Test that uppercase=False is the default behavior."""
         ip = "192.168.1.1"
         assert ip_to_hex_str(ip) == ip_to_hex_str(ip, uppercase=False)
+
+class TestValidateAndStreamlineMac:
+    """Tests for validate_and_streamline_mac helper."""
+
+    @pytest.mark.parametrize(
+        "mac,expected",
+        [
+            ("AA:BB:CC:DD:EE:FF", "AABBCCDDEEFF"),
+            ("aa:bb:cc:dd:ee:ff", "AABBCCDDEEFF"),
+            ("AA-BB-CC-DD-EE-FF", "AABBCCDDEEFF"),
+            ("aa-bb-cc-dd-ee-ff", "AABBCCDDEEFF"),
+            ("AABBCCDDEEFF", "AABBCCDDEEFF"),
+            ("aabbccddeeff", "AABBCCDDEEFF"),
+            ("00:00:00:00:00:00", "000000000000"),
+            ("FF:FF:FF:FF:FF:FF", "FFFFFFFFFFFF"),
+            ("01:23:45:67:89:AB", "0123456789AB"),
+            ("a1:b2:c3:d4:e5:f6", "A1B2C3D4E5F6"),
+        ],
+    )
+    def test_valid_mac_formats(self, mac, expected):
+        """Test valid MAC addresses in all supported formats."""
+        assert validate_and_streamline_mac(mac) == expected
+
+    @pytest.mark.parametrize(
+        "mac,expected",
+        [
+            ("aa:bb:cc:dd:ee:ff", "AABBCCDDEEFF"),
+            ("AA:BB:CC:DD:EE:FF", "AABBCCDDEEFF"),
+            ("Aa:Bb:Cc:Dd:Ee:Ff", "AABBCCDDEEFF"),
+            ("aabbccddeeff", "AABBCCDDEEFF"),
+            ("AaBbCcDdEeFf", "AABBCCDDEEFF"),
+        ],
+    )
+    def test_case_insensitive(self, mac, expected):
+        """Test that input case is normalized to uppercase."""
+        assert validate_and_streamline_mac(mac) == expected
+
+    @pytest.mark.parametrize(
+        "invalid_mac",
+        [
+            "AA:BB:CC:DD:EE",  # Too few octets
+            "AA:BB:CC:DD:EE:FF:00",  # Too many octets
+            "GG:BB:CC:DD:EE:FF",  # Invalid hex characters
+            "AA:BB:CC:DD:EE:FG",  # Invalid hex character at end
+            "AA:BB:CC:DD:EE:",  # Trailing delimiter
+            ":AA:BB:CC:DD:EE:FF",  # Leading delimiter
+            "AA::BB:CC:DD:EE:FF",  # Double delimiter
+            "AABBCCDDEE",  # Too few hex digits (10)
+            "AABBCCDDEEFFAA",  # Too many hex digits (14)
+            "AA BB CC DD EE FF",  # Space delimiters
+            "AA.BB.CC.DD.EE.FF",  # Dot delimiters
+            "AA/BB/CC/DD/EE/FF",  # Slash delimiters
+            "",  # Empty string
+            "ZZZZZZZZZZZZ",  # Invalid hex
+            "AA:BB:CC:DD:EE:FF:",  # Trailing colon
+            "AA:BB:CC:DD:E:FF",  # Incomplete octet
+        ],
+    )
+    def test_invalid_macr(self, invalid_mac):
+        """Test that invalid MAC addresses raise ValueError."""
+        with pytest.raises(ValueError, match="Invalid MAC address"):
+            validate_and_streamline_mac(invalid_mac)
+
