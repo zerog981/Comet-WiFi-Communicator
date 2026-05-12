@@ -84,6 +84,8 @@ def ip_to_hex_str(ip_str: str, uppercase=False) -> str:
     :return: String of IP in hex representation, e.g. "C0A80002".
     """
     ip = ipaddress.ip_address(ip_str) # Validate IP
+    if ip.version == 6:
+        raise IPv6NotAllowed("Supplied IP has IPv6 format. Not supported.")
     ip_hex = ip.packed.hex()
     if uppercase:
         return ip_hex.upper()
@@ -102,3 +104,6 @@ def validate_and_streamline_mac(mac: str) -> str:
         raise ValueError(f"Invalid MAC address: {mac}")
     return mac.replace(":", "").replace("-", "").upper()
 
+class IPv6NotAllowed(Exception):
+    """Exception for unsupported IPv6."""
+    pass

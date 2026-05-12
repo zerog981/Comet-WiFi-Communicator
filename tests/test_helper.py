@@ -9,6 +9,8 @@ from comet_wifi_communicator.helper import (
     char_to_unicode,
     string_to_unicode,
     int_to_hex_str,
+    ip_to_hex_str,
+    IPv6NotAllowed,
 )
 
 
@@ -240,3 +242,72 @@ class TestStringToUnicode:
         """Result should always be a string."""
         result = string_to_unicode("A")
         assert isinstance(result, str)
+
+class TestIpToHexStr:
+    """Tests for ip_to_hex_string helper."""
+
+    @pytest.mark.parametrize("ip,ip_hex", [
+            ("192.168.0.2", "c0a80002"),
+            ("127.0.0.1", "7f000001"),
+            ("0.0.0.0", "00000000"),
+            ("255.255.255.255", "ffffffff"),
+            ("10.0.0.1", "0a000001"),
+            ("172.16.0.1", "ac100001"),
+            ("1.1.1.1", "01010101"),
+            ("8.8.8.8", "08080808"),
+    ])
+    def test_valid_ipv4_lowercase(self, ip, ip_hex):
+        """Test valid IPv4 addresses with lowercase output (default)."""
+        assert ip_to_hex_str(ip) == ip_hex
+
+    @pytest.mark.parametrize("ip,ip_hex", [
+            ("192.168.0.2", "C0A80002"),
+            ("127.0.0.1", "7F000001"),
+            ("0.0.0.0", "00000000"),
+            ("255.255.255.255", "FFFFFFFF"),
+            ("10.0.0.1", "0A000001"),
+            ("172.16.0.1", "AC100001"),
+            ("1.1.1.1", "01010101"),
+            ("8.8.8.8", "08080808"),
+        ])
+    def test_valid_ipv4_uppercase(self, ip, ip_hex):
+        """Test valid IPv4 addresses with uppercase output."""
+        assert ip_to_hex_str(ip, uppercase=True) == ip_hex
+
+    @pytest.mark.parametrize("invalid_ip", [
+            "256.1.1.1",  # Octet out of range
+            "192.168.1",  # Missing octet
+            "192.168.1.1.1",  # Extra octet
+            "not.an.ip.address",  # Non-numeric
+            "192.168.a.1",  # Non-numeric octet
+            "",  # Empty string
+            "192.168.-1.1",  # Negative octet
+            "192.168.1.256",  # Out of range
+            "192.168.1.1.1.1",  # Too many segments
+            "192.168..1",  # Missing segment
+            "....",  # Only dots
+            "192 168 1 1",  # Spaces instead of dots
+            "192.168.1.1/24",  # CIDR notation (not plain IP)
+        ])
+    def test_invalid_ipv4_format(self, invalid_ip):
+        """Test that invalid IPv4 formats raise ValueError."""
+        with pytest.raises(ValueError):
+            ip_to_hex_str(invalid_ip)
+
+    @pytest.mark.parametrize("ipv6", [
+            "2001:db8::1",
+            "::1",
+            "fe80::1",
+            "::",
+            "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+            "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+        ])
+    def test_ipv6_input(self, ipv6):
+        """Test that IPv6 addresses raise IPv6NotAllowed."""
+        with pytest.raises(IPv6NotAllowed):
+            ip_to_hex_str(ipv6)
+
+    def test_uppercase_false_default(self):
+        """Test that uppercase=False is the default behavior."""
+        ip = "192.168.1.1"
+        assert ip_to_hex_str(ip) == ip_to_hex_str(ip, uppercase=False)
