@@ -80,7 +80,8 @@ def send_config_data( # nosec B107
             if logger:
                 logger.error("Error sending data.")
     except socket.timeout:
-        logger.error("Unable to connect to thermostat")
+        if logger:
+            logger.error("Unable to connect to thermostat")
 
     finally:
         s.close()
