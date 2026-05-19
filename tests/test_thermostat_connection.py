@@ -2,7 +2,6 @@
 
 import pytest
 from unittest.mock import Mock
-from paho.mqtt.client import CONNACK_ACCEPTED
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.reasoncodes import ReasonCode
 

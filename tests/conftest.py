@@ -1,6 +1,6 @@
 """Shared pytest configuration and fixtures."""
 
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 
@@ -26,3 +26,17 @@ def thermostat(mock_mqtt_client):
 def config():
     """Create a ThermostatConfig instance."""
     return ThermostatConfig()
+
+@pytest.fixture
+def mock_socket():
+    """Patch socket.socket and return the mock instance."""
+    mock_socket = MagicMock()
+    with patch("comet_wifi_communicator.setup_thermostat.socket.socket", return_value=mock_socket):
+        yield mock_socket
+
+
+@pytest.fixture
+def mock_sleep():
+    """Patch time.sleep to speed up tests."""
+    with patch("comet_wifi_communicator.setup_thermostat.time.sleep"):
+        yield
