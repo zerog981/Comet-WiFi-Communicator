@@ -38,23 +38,21 @@ class TestSendConfigData:
 
         assert result is False
         mock_socket.close.assert_called_once()
-    #
-    # @patch("comet_wifi_communicator.communicator.socket.socket")
-    # @patch("comet_wifi_communicator.communicator.time.sleep")
-    # def test_send_timeout(self, mock_sleep, mock_socket_class, mock_socket):
-    #     """Test handling of send timeout."""
-    #     mock_socket_class.return_value = mock_socket
-    #     mock_socket.connect = Mock()
-    #     mock_socket.sendall.side_effect = socket.timeout("Send timed out")
-    #
-    #     result = send_config_data(
-    #         wifi_ssid="TestNetwork",
-    #         wifi_password="TestPass123",
-    #     )
-    #
-    #     assert result is False
-    #     mock_socket.close.assert_called_once()
-    #
+
+    def test_send_timeout(self, mock_sleep, mock_socket):
+         """Test handling of send timeout."""
+         mock_socket.connect = Mock()
+         mock_socket.sendall.side_effect = socket.timeout("Send timed out")
+
+         result = send_config_data(
+             wifi_ssid="TestNetwork",
+             wifi_password="TestPass123",
+         )
+
+         assert result is False
+         mock_socket.close.assert_called_once()
+
+
     # @patch("comet_wifi_communicator.communicator.socket.socket")
     # @patch("comet_wifi_communicator.communicator.time.sleep")
     # def test_data_formatting(self, mock_sleep, mock_socket_class, mock_socket):
