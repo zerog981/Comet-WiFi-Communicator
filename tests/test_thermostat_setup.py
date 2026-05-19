@@ -52,9 +52,18 @@ class TestSendConfigData:
          assert result is False
          mock_socket.close.assert_called_once()
 
+    def test_socket_close_on_exception(self, mock_sleep, mock_socket):
+        """Test that socket is closed even if sendall raises an exception."""
+        mock_socket.sendall.side_effect = Exception("Unexpected error")
 
-    # @patch("comet_wifi_communicator.communicator.socket.socket")
-    # @patch("comet_wifi_communicator.communicator.time.sleep")
+        with pytest.raises(Exception):
+            send_config_data(
+                wifi_ssid="TestNetwork",
+                wifi_password="TestPass123",
+            )
+
+        mock_socket.close.assert_called_once()
+
     # def test_data_formatting(self, mock_sleep, mock_socket_class, mock_socket):
     #     """Test that data is formatted correctly before sending."""
     #     mock_socket_class.return_value = mock_socket
@@ -84,20 +93,7 @@ class TestSendConfigData:
     #
     # @patch("comet_wifi_communicator.communicator.socket.socket")
     # @patch("comet_wifi_communicator.communicator.time.sleep")
-    # def test_socket_close_on_exception(
-    #     self, mock_sleep, mock_socket_class, mock_socket
-    # ):
-    #     """Test that socket is closed even if sendall raises an exception."""
-    #     mock_socket_class.return_value = mock_socket
-    #     mock_socket.sendall.side_effect = Exception("Unexpected error")
-    #
-    #     with pytest.raises(Exception):
-    #         send_config_data(
-    #             wifi_ssid="TestNetwork",
-    #             wifi_password="TestPass123",
-    #         )
-    #
-    #     mock_socket.close.assert_called_once()
+
     #
     # @patch("comet_wifi_communicator.communicator.socket.socket")
     # @patch("comet_wifi_communicator.communicator.time.sleep")
