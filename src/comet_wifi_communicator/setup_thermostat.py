@@ -29,9 +29,9 @@ def send_config_data( # nosec B107
         :param wifi_password: The password for the WiFi network the thermostat should use.
         :param mqtt_server_ip: The MQTT server IP address. If "0.0.0.0" is used, the device will try to connect to mqtt.eurotronic.io, mqtt2.eurotronic.io, or mqtt3.eurotronic.io. nosec B104
         :param mqtt_user: MQTT server username in hex. Defaults to "00000000". Only effective if MQTT
-            server IP is "0.0.0.0".
+            server IP is "0.0.0.0". Must be hex formatted.
         :param mqtt_password: MQTT server password in hex. Defaults to "0000000000000000". Only effective
-            if MQTT server IP is "0.0.0.0".
+            if MQTT server IP is "0.0.0.0". Must be hex formatted.
         :param mqtt_port: MQTT server port. Defaults to 1883.
         :param comet_wifi_ip: IP address of the Comet WiFi device (hotspot). Defaults to "10.0.0.1".
         :param comet_wifi_port: Port of the Comet WiFi device (hotspot). Defaults to 1233.
