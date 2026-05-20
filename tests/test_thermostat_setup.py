@@ -64,32 +64,29 @@ class TestSendConfigData:
 
         mock_socket.close.assert_called_once()
 
-    # def test_data_formatting(self, mock_sleep, mock_socket_class, mock_socket):
-    #     """Test that data is formatted correctly before sending."""
-    #     mock_socket_class.return_value = mock_socket
-    #
-    #     send_config_data(
-    #         wifi_ssid="MySSID",
-    #         wifi_password="MyPass",
-    #         mqtt_server_ip="10.0.0.1",
-    #         mqtt_user="user123",
-    #         mqtt_password="pass456",
-    #         mqtt_port=1883,
-    #     )
-    #
-    #     # Capture the data sent
-    #     call_args = mock_socket.sendall.call_args[0][0]
-    #
-    #     # Verify helpers produce correct output
-    #     expected_ssid = string_to_unicode("MySSID", uppercase=True)
-    #     expected_pass = string_to_unicode("MyPass", uppercase=True)
-    #     expected_ip = ip_to_hex_str("10.0.0.1", uppercase=True)
-    #     expected_port = int_to_hex_str(1883, uppercase=True)
-    #
-    #     assert expected_ssid in call_args
-    #     assert expected_pass in call_args
-    #     assert expected_ip in call_args
-    #     assert expected_port in call_args
+    def test_data_formatting(self, mock_sleep, mock_socket):
+        """Test that data is formatted correctly before sending."""
+
+        send_config_data(
+            wifi_ssid="MySSID",
+            wifi_password="MyPass",
+            mqtt_server_ip="10.0.0.1",
+            mqtt_user="A0B1C2",
+            mqtt_password="ABCDEF",
+            mqtt_port=1883,
+        )
+
+        call_args = mock_socket.sendall.call_args[0][0]
+
+        expected_ssid = string_to_unicode("MySSID", uppercase=True).encode()
+        expected_pass = string_to_unicode("MyPass", uppercase=True).encode()
+        expected_ip = ip_to_hex_str("10.0.0.1", uppercase=True).encode()
+        expected_port = int_to_hex_str(1883, uppercase=True).encode()
+
+        assert expected_ssid in call_args
+        assert expected_pass in call_args
+        assert expected_ip in call_args
+        assert expected_port in call_args
     #
     # @patch("comet_wifi_communicator.communicator.socket.socket")
     # @patch("comet_wifi_communicator.communicator.time.sleep")
