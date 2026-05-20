@@ -1,6 +1,6 @@
 import pytest
 import socket
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import Mock, patch, MagicMock, call, ANY
 
 from comet_wifi_communicator.setup_thermostat import send_config_data
 from comet_wifi_communicator.helper import (
@@ -97,3 +97,83 @@ class TestSendConfigData:
             comet_wifi_port=5000,
         )
         mock_socket.connect.assert_called_once_with(("192.168.1.50", 5000))
+
+    def test_logger_none_does_not_raise(self, mock_sleep, mock_socket):
+        """Test function executes without error when logger=None."""
+        result = send_config_data(
+            wifi_ssid="TestNetwork", wifi_password="TestPass123", logger=None
+        )
+
+        assert result is True
+        mock_socket.close.assert_called_once()
+
+    def test_logger_calls_on_success(self, mock_sleep, mock_socket):
+        """Test logger calls occur in correct sequence on success."""
+        mock_logger = Mock()
+
+        send_config_data(
+            wifi_ssid="TestNetwork", wifi_password="TestPass123", logger=mock_logger
+        )
+
+        expected_calls = [
+            call(ANY),  # Initial SSID/MQTT/Comet info
+            call("Configuring connection."),
+            call("Successfully connected to thermostat."),
+            call("Sending data."),
+            call("Data successfully transmitted."),
+        ]
+        mock_logger.info.assert_has_calls(expected_calls, any_order=False)
+
+    def test_logger_error_on_connection_timeout(self, mock_socket):
+        """Test logger.error() on connection timeout."""
+        mock_socket.connect.side_effect = socket.timeout()
+        mock_logger = Mock()
+
+        result = send_config_data(
+            wifi_ssid="TestNetwork", wifi_password="TestPass123", logger=mock_logger
+        )
+
+        assert result is False
+        mock_logger.error.assert_called_once_with("Unable to connect to thermostat")
+
+    def test_logger_error_on_send_timeout(self, mock_sleep, mock_socket):
+        """Test logger.error() on send timeout."""
+        mock_socket.sendall.side_effect = socket.timeout()
+        mock_logger = Mock()
+
+        result = send_config_data(
+            wifi_ssid="TestNetwork", wifi_password="TestPass123", logger=mock_logger
+        )
+
+        assert result is False
+        mock_logger.error.assert_called_once_with("Error sending data.")
+
+    def test_logger_mqtt_broker_info_logged(self, mock_sleep, mock_socket):
+        """Test MQTT broker details are logged correctly."""
+        mock_logger = Mock()
+
+        send_config_data(
+            wifi_ssid="MySSID",
+            wifi_password="MyPass",
+            mqtt_server_ip="192.168.1.100",
+            mqtt_port=8883,
+            logger=mock_logger,
+        )
+        first_info_call = mock_logger.info.call_args_list[0][0][0]
+        assert "192.168.1.100:8883" in first_info_call
+        assert "MySSID" in first_info_call
+
+    def test_logger_comet_endpoint_info_logged(self, mock_sleep, mock_socket):
+        """Test Comet thermostat address details are logged."""
+        mock_logger = Mock()
+
+        send_config_data(
+            wifi_ssid="TestNetwork",
+            wifi_password="TestPass123",
+            comet_wifi_ip="192.168.1.50",
+            comet_wifi_port=5000,
+            logger=mock_logger,
+        )
+
+        first_info_call = mock_logger.info.call_args_list[0][0][0]
+        assert "192.168.1.50:5000" in first_info_call
