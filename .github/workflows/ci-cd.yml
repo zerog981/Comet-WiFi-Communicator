@@ -3,7 +3,7 @@ on:
   push:
     branches: [main, development]
   pull_request:
-    branches: [main]
+    branches: [main, development]
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
         run: python -m bandit -r -x "tests" src
 
       - name: Run unit tests
-        run: python -m pytest -v --cov=src --cov-fail-under=90 --cov-report=term-missing
+        run: python -m pytest -v --cov --cov-fail-under=90 --cov-report=term-missing
 
   cd-build:
     permissions:

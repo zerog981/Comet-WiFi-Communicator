@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.comet_wifi_communicator.const import (
+from comet_wifi_communicator.const import (
     CONNECTION_TEST_TIMEOUT,
     HEX_PREFIX,
     TEMPERATURE_HEX_OFF,
@@ -37,6 +37,19 @@ class TestMqttMessageHandling:
         thermostat._on_mqtt_message(None, None, mock_message)
 
         assert thermostat.temperature_ambient == 17.5
+
+    def test_on_message_configuration(self, thermostat):
+        """Configuration message updates internal value."""
+        mock_message = Mock()
+        mock_message.topic = thermostat._topics.reply_topics["CONFIGURATION"]
+        mock_message.payload.decode.return_value = "#0502"
+
+        thermostat._on_mqtt_message(None, None, mock_message)
+
+        assert thermostat.config.dst is True
+        assert thermostat.config.display_mirrored is False
+        assert thermostat.config.key_lock is True
+        assert thermostat.config.key_lock_plus is False
 
     def test_on_message_setpoint_heating(self, thermostat):
         """Heating setpoint temperature updates value and heating status."""
