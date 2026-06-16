@@ -41,7 +41,7 @@ Homepage = "https://github.com/zerog981/Comet-WiFi-Communicator"
 Issues = "https://github.com/"
 
 [project.scripts]
-setup-thermostat = "cli:setup_thermostat"
+setup-thermostat = "comet_wifi_communicator.cli:setup_thermostat"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
