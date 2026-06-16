@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.7.0 (2026-06-16)
+
+### Features
+
+- Add cli command for setting up thermostat
+  ([`8cb68c3`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/8cb68c34224f21c80c1af4fef2242d9efb7f8413))
+
+
 ## v0.6.0 (2026-06-03)
 
 ### Bug Fixes
