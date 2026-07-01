@@ -59,5 +59,8 @@ For more information about the library, have a look at the [thermostat.py](src/c
 - Thermostat does not support MQTT authentication when using custom MQTT broker 
 - The thermostat will regularly send ping messages to MQTT. While running, the Thermostat library will automatically handle these requests. Therefore, it has to be kept running.
 
+## ⚙️ Implementation Details
+To be added.
+
 ## 📜 License
 GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007, see the [license file](LICENSE).
