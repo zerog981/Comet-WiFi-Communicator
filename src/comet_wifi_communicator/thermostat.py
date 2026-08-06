@@ -100,8 +100,18 @@ class ThermostatWindowOpenConfig:
 class Thermostat:
     """
     Thermostat communication class.
+
+    Attributes:
+        config: Thermostat configuration.
     """
     def __init__(self, mqtt_host: str, mqtt_port: int, mac: str):
+        """Initialization of a thermostat instance.
+
+        Args:
+            mqtt_host: MQTT host over which to communicate with thermostat.
+            mqtt_port: MQTT port of MQTT host.
+            mac: Thermostat MAC Address.
+        """
         self._mac = validate_and_streamline_mac(mac)
         self._mqtt_host = mqtt_host
         self._mqtt_port = mqtt_port
@@ -116,42 +126,51 @@ class Thermostat:
 
         self._mqtt_client.user_data_set([])  # Clear user data from the client
 
-        self._last_connection_test_published = 0
+        self._last_connection_test_published = 0 # UNIX time of last published connection test.
 
     @property
     def connected(self) -> bool:
+        """Connection to the thermostat is established."""
         return self._connected
 
     @property
     def mqtt_host(self) -> str:
+        """The MQTT host used for communication."""
         return self._mqtt_host
 
     @property
     def setpoint(self) -> float:
+        """Thermostat temperature setpoint."""
         return self._data.temperature_setpoint
 
     @property
     def temperature_ambient(self) -> float:
+        """Ambient temperature as measured by thermostat."""
         return self._data.temperature_ambient
 
     @property
     def temperature_offset(self) -> float:
+        """Temperature offset."""
         return self._data.temperature_offset
 
     @property
     def is_heating(self) -> bool:
+        """True if thermostat is active."""
         return self._data.is_heating
 
     @property
     def window_open(self) -> bool:
+        """True if open window is detected."""
         return self._data.window_open
 
     @property
     def battery_level(self) -> float:
+        """Thermostat battery level."""
         return self._data.battery_level
 
     @property
     def mac(self) -> str:
+        """Thermostat MAC address."""
         return self._mac
 
     def _on_mqtt_connect(self, client, userdata, flags, reason_code, properties=None):
@@ -163,7 +182,6 @@ class Thermostat:
         client.subscribe(self._topics.command_topics["CONNECTION_TEST"])
 
     def _on_mqtt_message(self, client, userdata, message):
-
         # Thermostat disconnected
         if message.topic == self._topics.reply_topics["WILL"]:
             self._connected = False
@@ -237,17 +255,23 @@ class Thermostat:
     async def update_values(self, request_value: int = 0xFFFFFFFF) -> None:
         """Update all parameters.
 
-        Use this function to fetch setpoint temperature, ambient temperature, battery level,
-        configuration parameters, open window settings etc. Supply the constants in the form REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_WIFI_SIGNAL_STRENGTH
+        Fetches setpoint temperature, ambient temperature, battery level, configuration parameters,
+        open window settings etc. Supply the constants in the form
+        REQUEST_TEMPERATURE_SETPOINT | REQUEST_TEMPERATURE_AMBIENT | REQUEST_WIFI_SIGNAL_STRENGTH.
 
-        :return: None
         """
         request_str = f"{HEX_PREFIX}{request_value:08X}"
         self._mqtt_client.publish(
             self._topics.command_topics["GENERAL_VALUE_REQUEST"], request_str
         )
 
-    async def update_standard_values(self):
+    async def update_standard_values(self) -> None:
+        """Query thermostat for standard parameters.
+
+        Fetches setpoint temperature, ambient temperature, temperature offset, configuration, datetime, window open
+        configuration, battery level, base software version, wifi software version, and wifi signal strength.
+
+        """
         await self.update_values(
             REQUEST_TEMPERATURE_SETPOINT
             | REQUEST_TEMPERATURE_AMBIENT
@@ -261,14 +285,24 @@ class Thermostat:
             | REQUEST_WIFI_SIGNAL_STRENGTH
         )
 
-    async def update_heating_values(self):
+    async def update_heating_values(self) -> None:
+        """Query thermostat for heating-relevant parameters.
+
+        Fetches setpoint temperature, ambient temperature, and temperature offset.
+
+        """
         await self.update_values(
             REQUEST_TEMPERATURE_SETPOINT
             | REQUEST_TEMPERATURE_AMBIENT
             | REQUEST_TEMPERATURE_OFFSET
         )  # TODO: Add window open
 
-    async def update_config(self):
+    async def update_config(self) -> None:
+        """Query thermostat for configuration.
+
+        Fetches configuration from thermostat.
+
+        """
         await self.update_values(REQUEST_CONFIG)
 
     async def _config_enable(self, values: int = 0x0000):
@@ -291,31 +325,76 @@ class Thermostat:
         )
         await self.update_config()
         
-    async def enable_key_lock_plus(self):
+    async def enable_key_lock_plus(self) -> None:
+        """Enable key lock plus.
+
+        Activates key lock that can only be controlled remotly and not directly on the device.
+
+        """
         await self._config_enable(CFG_KEY_LOCK_PLUS)
         
-    async def disable_key_lock_plus(self):
+    async def disable_key_lock_plus(self) -> None:
+        """Disable key lock plus.
+
+        Disable key lock that can only be controlled remotly and not directly on the device.
+
+        """
         await self._config_disable(CFG_KEY_LOCK_PLUS)
         
-    async def enable_key_lock(self):
+    async def enable_key_lock(self) -> None:
+        """Enable key lock.
+
+        This key lock may also be disabled directly on the device.
+
+        """
         await self._config_enable(CFG_KEY_LOCK)
     
-    async def disable_key_lock(self):
+    async def disable_key_lock(self) -> None:
+        """Disable key lock.
+
+        This key lock may also be disabled directly on the device.
+
+        """
         await self._config_disable(CFG_KEY_LOCK)
         
-    async def enable_mirrored_display(self):
+    async def enable_mirrored_display(self) -> None:
+        """Enable mirrored display.
+
+        Rotate device display by 180 degrees.
+
+        """
         await self._config_enable(CFG_MIRRORED_DISPLAY)
     
-    async def disable_mirrored_display(self):
+    async def disable_mirrored_display(self) -> None:
+        """Disable mirrored display.
+
+        Set device display rotation back to default.
+
+        """
         await self._config_disable(CFG_MIRRORED_DISPLAY)
         
-    async def enable_dst(self):
+    async def enable_dst(self) -> None:
+        """Enable daylight savings time.
+
+        Enable daylight savings time (DST) for device clock.
+
+        """
         await self._config_enable(CFG_DST)
     
-    async def disable_dst(self):
+    async def disable_dst(self) -> None:
+        """Disable daylight savings time.
+
+        Disable daylight savings time (DST) for device clock.
+
+        """
         await self._config_disable(CFG_DST)
 
     async def set_temperature(self, temperature: float) -> None:
+        """Set thermostat temperature.
+
+        Send setpoint temperature to device.
+
+        """
         if not self._connected:
             raise ConnectionError()
         if temperature > TEMPERATURE_SETPOINT_MAX:
@@ -330,6 +409,11 @@ class Thermostat:
         await self.update_heating_values()
 
     async def turn_off(self) -> None:
+        """Turn thermostat off.
+
+        Disable thermostat heating. Frost protection may stay enabled.
+
+        """
         if not self._connected:
             raise ConnectionError()
         self._mqtt_client.publish(
@@ -339,6 +423,11 @@ class Thermostat:
         await self.update_heating_values()
 
     async def turn_fully_on(self) -> None:
+        """Turn thermostat fully on.
+
+        Set thermostat to be fully open (unregulated heating).
+
+        """
         if not self._connected:
             raise ConnectionError()
         self._mqtt_client.publish(
@@ -349,4 +438,5 @@ class Thermostat:
 
 
 class MQTTConnectError(Exception):
+    """MQTT connection error."""
     pass

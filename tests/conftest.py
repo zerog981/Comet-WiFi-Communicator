@@ -40,3 +40,9 @@ def mock_sleep():
     """Patch time.sleep to speed up tests."""
     with patch("comet_wifi_communicator.setup_thermostat.time.sleep"):
         yield
+
+@pytest.fixture
+def mock_send_config_data():
+    """Fixture that mocks send_config_data function."""
+    with patch("comet_wifi_communicator.cli.send_config_data") as mock:
+        yield mock

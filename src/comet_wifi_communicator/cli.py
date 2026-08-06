@@ -46,5 +46,5 @@ def setup_thermostat() -> None:
         mqtt_port=args.mqtt_server_port,
     )
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     setup_thermostat()
