@@ -285,14 +285,24 @@ class Thermostat:
             | REQUEST_WIFI_SIGNAL_STRENGTH
         )
 
-    async def update_heating_values(self):
+    async def update_heating_values(self) -> None:
+        """Query thermostat for heating-relevant parameters.
+
+        Fetches setpoint temperature, ambient temperature, and temperature offset.
+
+        """
         await self.update_values(
             REQUEST_TEMPERATURE_SETPOINT
             | REQUEST_TEMPERATURE_AMBIENT
             | REQUEST_TEMPERATURE_OFFSET
         )  # TODO: Add window open
 
-    async def update_config(self):
+    async def update_config(self) -> None:
+        """Query thermostat for configuration.
+
+        Fetches configuration from thermostat.
+
+        """
         await self.update_values(REQUEST_CONFIG)
 
     async def _config_enable(self, values: int = 0x0000):
@@ -315,31 +325,76 @@ class Thermostat:
         )
         await self.update_config()
         
-    async def enable_key_lock_plus(self):
+    async def enable_key_lock_plus(self) -> None:
+        """Enable key lock plus.
+
+        Activates key lock that can only be controlled remotly and not directly on the device.
+
+        """
         await self._config_enable(CFG_KEY_LOCK_PLUS)
         
-    async def disable_key_lock_plus(self):
+    async def disable_key_lock_plus(self) -> None:
+        """Disable key lock plus.
+
+        Disable key lock that can only be controlled remotly and not directly on the device.
+
+        """
         await self._config_disable(CFG_KEY_LOCK_PLUS)
         
-    async def enable_key_lock(self):
+    async def enable_key_lock(self) -> None:
+        """Enable key lock.
+
+        This key lock may also be disabled directly on the device.
+
+        """
         await self._config_enable(CFG_KEY_LOCK)
     
-    async def disable_key_lock(self):
+    async def disable_key_lock(self) -> None:
+        """Disable key lock.
+
+        This key lock may also be disabled directly on the device.
+
+        """
         await self._config_disable(CFG_KEY_LOCK)
         
-    async def enable_mirrored_display(self):
+    async def enable_mirrored_display(self) -> None:
+        """Enable mirrored display.
+
+        Rotate device display by 180 degrees.
+
+        """
         await self._config_enable(CFG_MIRRORED_DISPLAY)
     
-    async def disable_mirrored_display(self):
+    async def disable_mirrored_display(self) -> None:
+        """Disable mirrored display.
+
+        Set device display rotation back to default.
+
+        """
         await self._config_disable(CFG_MIRRORED_DISPLAY)
         
-    async def enable_dst(self):
+    async def enable_dst(self) -> None:
+        """Enable daylight savings time.
+
+        Enable daylight savings time (DST) for device clock.
+
+        """
         await self._config_enable(CFG_DST)
     
-    async def disable_dst(self):
+    async def disable_dst(self) -> None:
+        """Disable daylight savings time.
+
+        Disable daylight savings time (DST) for device clock.
+
+        """
         await self._config_disable(CFG_DST)
 
     async def set_temperature(self, temperature: float) -> None:
+        """Set thermostat temperature.
+
+        Send setpoint temperature to device.
+
+        """
         if not self._connected:
             raise ConnectionError()
         if temperature > TEMPERATURE_SETPOINT_MAX:
@@ -354,6 +409,11 @@ class Thermostat:
         await self.update_heating_values()
 
     async def turn_off(self) -> None:
+        """Turn thermostat off.
+
+        Disable thermostat heating. Frost protection may stay enabled.
+
+        """
         if not self._connected:
             raise ConnectionError()
         self._mqtt_client.publish(
@@ -363,6 +423,11 @@ class Thermostat:
         await self.update_heating_values()
 
     async def turn_fully_on(self) -> None:
+        """Turn thermostat fully on.
+
+        Set thermostat to be fully open (unregulated heating).
+
+        """
         if not self._connected:
             raise ConnectionError()
         self._mqtt_client.publish(
@@ -373,4 +438,5 @@ class Thermostat:
 
 
 class MQTTConnectError(Exception):
+    """MQTT connection error."""
     pass
