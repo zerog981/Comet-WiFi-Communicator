@@ -2,6 +2,29 @@
 
 <!-- version list -->
 
+## v0.8.0 (2026-08-06)
+
+### Features
+
+- Add details to documentation
+  ([`760cc21`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/760cc211239b3a60cf88884d55d574c2058105c5))
+
+- Add documentation
+  ([`1447bfb`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/1447bfbecb085227b31b05d7663dbc76e05c5d4e))
+
+- Add implementation details hint
+  ([`4f1c937`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/4f1c9375f8e1d5ea502e5789f0e97ae2bd34525d))
+
+- Add missing docstrings
+  ([`2b027d2`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/2b027d2efd5014144eba704249f8134b45f1ba0c))
+
+- CLI command for setting up thermostat
+  ([`097d042`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/097d0420a79b7348746296369736434c88168d30))
+
+- Improve documentation
+  ([`c621dee`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/c621deece1fa923a4744b00d87463ef28a76d338))
+
+
 ## v0.7.1 (2026-06-16)
 
 
