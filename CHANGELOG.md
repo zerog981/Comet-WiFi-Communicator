@@ -2,6 +2,49 @@
 
 <!-- version list -->
 
+## v1.0.0 (2026-09-13)
+
+### Bug Fixes
+
+- Bandit exception
+  ([`d5306b0`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/d5306b054e06c3898dd8637fe98ac486d2f2ae0e))
+
+- Improve cli
+  ([`b6922f1`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/b6922f1c0afdb75dc63096bfe16c4f675878a9f9))
+
+- Remove unused code
+  ([`eae1cb1`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/eae1cb16f50081a6c093aa7fa067ded6360debb7))
+
+### Chores
+
+- Update pipeline
+  ([`9020e20`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/9020e20fcc2159747d5813d048418d8e74a745b2))
+
+- Update pipeline
+  ([`78deb94`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/78deb94891a63bd939501e967184444e646fb2d3))
+
+- Update pipeline
+  ([`2aab1dd`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/2aab1dd5e9b0d19bbd8c95496da083f86c0bdbfe))
+
+### Features
+
+- Provisioning modules and tests
+  ([`4dd0bfd`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/4dd0bfd39d9bdcecc5542a67e61a7bcb0b300a26))
+
+- Release the setup tool as comet-wifi-communicator 1.0.0
+  ([`439e149`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/439e149277c81f836efddb1e1ebaf88b88ce2afd))
+
+- Typing and module importing
+  ([`3827ba2`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/3827ba254e87c793f72e897cd19213d39e820cd2))
+
+- Update readme
+  ([`bbd7adb`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/bbd7adbb0ef9364a01476943db0c77083702e76e))
+
+### Breaking Changes
+
+- The MQTT client (Thermostat, paho-mqtt) is gone, use aiocometwifi instead.
+
+
 ## v0.8.0 (2026-08-06)
 
 ### Features
