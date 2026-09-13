@@ -12,9 +12,7 @@ authors = [
 description = "A library for communicating with Comet WiFi Thermostats over LAN."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-    "paho-mqtt ~= 2.1.0"
-]
+dependencies = []
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
