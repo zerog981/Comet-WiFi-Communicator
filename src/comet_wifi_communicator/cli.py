@@ -68,8 +68,8 @@ def build_parser() -> argparse.ArgumentParser:
     setup.add_argument(
         "--wifi-password",
         help=(
-            "Password of the Wi-Fi network the thermostat should join. Prompted for"
-            "when omitted (keeps it out of the shell history). Pass an empty string"
+            "Password of the Wi-Fi network the thermostat should join. Prompted for "
+            "when omitted (keeps it out of the shell history). Pass an empty string "
             "for an open network."
         ),
     )
