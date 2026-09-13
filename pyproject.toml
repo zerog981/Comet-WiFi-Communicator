@@ -9,39 +9,41 @@ version = "0.8.0"
 authors = [
   { name="zerog981", email="zerog981@example.com" },
 ]
-description = "A library for communicating with Comet WiFi Thermostats over LAN."
+description = "Command-line tool that points Comet WiFi thermostats at your own MQTT broker."
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "paho-mqtt ~= 2.1.0"
-]
+requires-python = ">=3.12"
+dependencies = []
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Environment :: Console",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
+    "Topic :: Home Automation",
+    "Typing :: Typed",
 ]
 license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
 
-packages = ["src/comet-wifi-communicator"]
-
 [project.optional-dependencies]
 dev = [
+    "mypy>=1.18",
     "build>=1.4",
     "pytest>=9.0",
-    "pytest-asyncio>=1.3",
     "pytest-mock>=3.15",
     "pytest-cov>=7.1",
     "bandit>=1.9",
     "pre-commit>=4.5",
-    "ruff>=0.15.13",
+    "ruff~=0.16.7",
 ]
 
 [project.urls]
 Homepage = "https://github.com/zerog981/Comet-WiFi-Communicator"
-Issues = "https://github.com/"
+Issues = "https://github.com/zerog981/Comet-WiFi-Communicator/issues"
+Changelog = "https://github.com/zerog981/Comet-WiFi-Communicator/blob/main/CHANGELOG.md"
 
 [project.scripts]
-setup-thermostat = "comet_wifi_communicator.cli:setup_thermostat"
+comet-wifi-communicator = "comet_wifi_communicator.cli:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -49,24 +51,42 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-asyncio_mode = "auto"
-markers = [
-    "asyncio: marks tests as async (deselect with '-m \"not asyncio\"')",
-]
 
 [tool.coverage.run]
-source = ["src"]
+source = ["comet_wifi_communicator"]
 omit = ["*/tests/*"]
 
 [tool.ruff]
-required-version = ">=0.15.1"
+required-version = "~=0.16.7"
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D203",    # conflicts with D211
+    "D213",    # conflicts with D212
+    "COM812",  # conflicts with the formatter
+    "CPY001",  # no per-file copyright headers
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004"]  # asserts and magic values are fine in tests
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+files = ["src", "tests"]
 
 [tool.bandit]
 exclude_dirs = ["tests"]
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
-branch = 'main'
 changelog_file = 'CHANGELOG.md'
-build_command = 'python -m pip install -r requirements_dev.txt && python -m build'
+build_command = 'python -m pip install build && python -m build'
 allow_zero_version = true
+
+[tool.semantic_release.branches.main]
+match = "main"

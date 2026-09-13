@@ -4,25 +4,43 @@ on:
     branches: [main, development]
   pull_request:
     branches: [main, development]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   ci:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ '3.12', '3.13', '3.14' ]
     steps:
       - name: Check-out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v6
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.13'
+          python-version: ${{ matrix.python-version }}
           cache: 'pip'
 
       - name: Install required packages
         run: python -m pip install -r requirements_dev.txt
+
+      - name: Ruff lint
+        run: python -m ruff check --output-format=github .
+
+      - name: Ruff format check
+        run: python -m ruff format --diff .
+
+      - name: Mypy
+        run: python -m mypy
 
       - name: Perform Bandit Analysis
         run: python -m bandit -r -x "tests" src
@@ -39,21 +57,22 @@ jobs:
     outputs:
       version: ${{ steps.release.outputs.version }}
       released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
 
     steps:
       - name: Check-out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Checkout full repository for versioning
 
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v6
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           cache: 'pip'
 
       - name: Prepare new release
-        uses: python-semantic-release/python-semantic-release@v10.5.3
+        uses: python-semantic-release/python-semantic-release@v10.6.2
         id: release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,71 +84,15 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-  cd-publish-testpypi:
+  cd-publish-pypi:
     permissions:
       id-token: write
       contents: read
     needs: cd-build
     if: needs.cd-build.outputs.released == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ needs.cd-build.outputs.version }}
-      released: ${{ needs.cd-build.outputs.released }}
+    environment: pypi
     steps:
-      - name: Check-out repository
-        uses: actions/checkout@v6
-
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.13'
-          cache: 'pip'
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: Publish package TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        if: needs.cd-build.outputs.released == 'true'
-        with:
-          repository-url: https://test.pypi.org/legacy/
-
-      - name: Purge pip cache
-        run: pip cache purge
-
-      - name: Test install from TestPyPI
-        run: pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple --no-cache-dir --force-reinstall comet-wifi-communicator
-
-      - name: Verify that latest version got installed
-        run: |
-          INSTALLED_VERSION=$(pip show comet-wifi-communicator | grep Version | awk '{print $2}') 
-          LATEST_VERSION=${{ needs.cd-build.outputs.version }}
-          if [ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]; then
-            echo "ERROR: Installed version $INSTALLED_VERSION does not match released version $LATEST_VERSION"
-            exit 1
-          fi
-          echo "✓ Verified: comet-wifi-communicator $INSTALLED_VERSION installed correctly -> Upload valid."
-
-  cd-publish-pypi:
-    permissions:
-      id-token: write
-      contents: read
-    needs: cd-publish-testpypi
-    if: needs.cd-publish-testpypi.outputs.released == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check-out repository
-        uses: actions/checkout@v6
-
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.13'
-          cache: 'pip'
-
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
@@ -138,4 +101,27 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        if: needs.cd-publish-testpypi.outputs.released == 'true'
+
+  cd-github-release:
+    permissions:
+      contents: write
+    needs: [ cd-build, cd-publish-pypi ]
+    if: needs.cd-build.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish the GitHub release
+        uses: python-semantic-release/publish-action@v10
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.cd-build.outputs.tag }}
