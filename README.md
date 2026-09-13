@@ -21,11 +21,23 @@ bricking your thermostat. Everything below is at your own risk.
 
 1. **An MQTT broker on your LAN that accepts anonymous clients.** The thermostats cannot be
    given credentials. See [Broker](#-broker).
-2. **Python ≥ 3.12** on a computer with Wi-Fi (it has to join the thermostat's hotspot).
+2. **Python ≥ 3.12**, or [pipx](https://pipx.pypa.io/) / [uv](https://docs.astral.sh/uv/), 
+   on a computer with Wi-Fi (it has to join the thermostat's hotspot).
 
 ## 📦 Installation
 
+Run it without installing anything permanently (pipx and uv fetch it into a temporary
+environment):
+
 ```bash
+pipx run comet-wifi-communicator setup --help
+uvx comet-wifi-communicator setup --help
+```
+
+Or install it as a command:
+
+```bash
+pipx install comet-wifi-communicator   # or: uv tool install comet-wifi-communicator
 pip install comet-wifi-communicator    # into a virtual environment
 ```
 
