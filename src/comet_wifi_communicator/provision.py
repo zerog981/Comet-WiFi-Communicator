@@ -36,7 +36,7 @@ _SEPARATOR = ","
 # Placeholders for the cloud credentials. The firmware only reads them when
 # the broker address is 0.0.0.0, which selects the manufacturer's cloud.
 _CLOUD_USER = "00000000"
-_CLOUD_PASSWORD = "0000000000000000"  # noqa: S105
+_CLOUD_PASSWORD = "0000000000000000"  # noqa: S105  # nosec B105
 
 _MAX_SSID_LENGTH = 32
 _MAX_PORT = 65535
