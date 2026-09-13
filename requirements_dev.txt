@@ -1,4 +1,4 @@
-hatchling >= 1.26
+hatchling >= 1.32.0
 build>=1.4.2,<1.7.0
 pytest>=9.0
 pytest-mock>=3.15
