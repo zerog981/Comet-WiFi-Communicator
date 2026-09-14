@@ -73,6 +73,11 @@ mosquitto_sub -h <broker ip> -t '01/#' -v
 The thermostat announces itself on `01/<MAC>/S/XX` (its connection test) when it connects and
 then from time to time.
 
+`setup` ends by printing the thermostat's MAC address, which Home Assistant asks for when you add
+the thermostat. This is an experimental function (it is derived from the hotspot's address in your
+computer's ARP table). In case the lookup fails or the thermostat cannot be found in Home Assistant,
+look the MAC address up in your router instead.
+
 All options:
 
 | Option | Meaning                                                                       |

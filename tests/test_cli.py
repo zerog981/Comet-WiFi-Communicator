@@ -44,6 +44,14 @@ def fake_getpass() -> Iterator[MagicMock]:
 
 
 @pytest.fixture(autouse=True)
+def fake_discovery() -> Iterator[MagicMock]:
+    """Replace the MAC lookup. It finds nothing unless a test says otherwise."""
+    with patch("comet_wifi_communicator.cli.discover_thermostat_mac") as mock:
+        mock.return_value = None
+        yield mock
+
+
+@pytest.fixture(autouse=True)
 def reset_log_level() -> Iterator[None]:
     """Undo the level ``main`` sets on the package logger."""
     yield
@@ -196,6 +204,37 @@ class TestOutcome:
 
         assert "192.168.178.2:1883" in caplog.text
         assert "'MyWiFi'" in caplog.text
+
+    @pytest.mark.usefixtures("fake_provision")
+    def test_mac_reported(
+        self, fake_discovery: MagicMock, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """The thermostat's MAC address is looked up and reported after success."""
+        fake_discovery.return_value = "A4:CF:12:34:56:78"
+
+        with caplog.at_level(logging.INFO):
+            assert main([*REQUIRED_ARGS, "--thermostat-ip", "192.168.4.1"]) == EXIT_OK
+
+        fake_discovery.assert_called_once_with("192.168.4.1")
+        assert "A4:CF:12:34:56:78" in caplog.text
+
+    @pytest.mark.usefixtures("fake_provision")
+    def test_mac_unknown(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Without an address the user is pointed at the router."""
+        with caplog.at_level(logging.INFO):
+            assert main(REQUIRED_ARGS) == EXIT_OK
+
+        assert "router" in caplog.text
+
+    def test_no_lookup_after_failure(
+        self, fake_provision: MagicMock, fake_discovery: MagicMock
+    ) -> None:
+        """A failed setup does not report an address."""
+        fake_provision.side_effect = ThermostatUnreachableError("unreachable")
+
+        assert main(REQUIRED_ARGS) == EXIT_FAILURE
+
+        fake_discovery.assert_not_called()
 
     @pytest.mark.parametrize(
         "error",

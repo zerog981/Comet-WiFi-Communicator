@@ -7,6 +7,7 @@ import sys
 from collections.abc import Sequence
 from importlib.metadata import PackageNotFoundError, version
 
+from comet_wifi_communicator.discovery import discover_thermostat_mac
 from comet_wifi_communicator.provision import (
     DEFAULT_MQTT_PORT,
     THERMOSTAT_IP,
@@ -150,7 +151,23 @@ def _run_setup(args: argparse.Namespace) -> int:
         args.mqtt_server_ip,
         args.mqtt_server_port,
     )
+    _report_mac(args.thermostat_ip)
     return EXIT_OK
+
+
+def _report_mac(thermostat_ip: str) -> None:
+    """Tell the user the thermostat's MAC address."""
+    mac = discover_thermostat_mac(thermostat_ip)
+    if mac is None:
+        _LOGGER.info(
+            "The Thermostat's MAC address could not be read from this computer. Look "
+            "it up in your router once the thermostat is on your network."
+        )
+    else:
+        _LOGGER.info(
+            "The Thermostat's MAC address should be %s (experimental). Note it down.",
+            mac,
+        )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
