@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v1.1.0 (2026-09-16)
+
+### Chores
+
+- **deps-dev**: Update bandit requirement from >=1.9 to >=1.9.4
+  ([`877e732`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/877e732e70659b38535868514a91510ee2b886ea))
+
+- **deps-dev**: Update hatchling requirement from >=1.26 to >=1.32.0
+  ([`cdc278b`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/cdc278bda916effbe57d2555c19b412c5acaae0f))
+
+### Documentation
+
+- Add pipx usage method
+  ([`41c02e6`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/41c02e6b719b565a5482b88b2aefb6e6163a6dd5))
+
+### Features
+
+- Add mac discovery
+  ([`1f06a86`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/1f06a86e9caee7ef4d6737e6d00d1a28e6b0bb70))
+
+
 ## v1.0.0 (2026-09-13)
 
 ### Bug Fixes
