@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.1.1 (2026-09-16)
+
+### Bug Fixes
+
+- Improve MAC discovery
+  ([`1d8fc76`](https://github.com/zerog981/Comet-WiFi-Communicator/commit/1d8fc7628fa6774a42d8286df53641adacadee97))
+
+
 ## v1.1.0 (2026-09-16)
 
 ### Chores
