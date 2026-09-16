@@ -226,15 +226,18 @@ class TestOutcome:
 
         assert "router" in caplog.text
 
-    def test_no_lookup_after_failure(
+    def test_lookup_before_sending(
         self, fake_provision: MagicMock, fake_discovery: MagicMock
     ) -> None:
-        """A failed setup does not report an address."""
+        """The address is looked up first, so it is reported even if sending fails."""
+        manager = MagicMock()
+        manager.attach_mock(fake_discovery, "discover")
+        manager.attach_mock(fake_provision, "provision")
         fake_provision.side_effect = ThermostatUnreachableError("unreachable")
 
         assert main(REQUIRED_ARGS) == EXIT_FAILURE
 
-        fake_discovery.assert_not_called()
+        assert [call[0] for call in manager.mock_calls] == ["discover", "provision"]
 
     @pytest.mark.parametrize(
         "error",

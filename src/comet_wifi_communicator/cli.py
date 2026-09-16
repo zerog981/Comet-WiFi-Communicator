@@ -130,6 +130,8 @@ def _run_setup(args: argparse.Namespace) -> int:
             _LOGGER.warning("Aborted.")
             return EXIT_INTERRUPTED
 
+    _report_mac(args.thermostat_ip)
+
     try:
         provision(
             args.wifi_ssid,
@@ -151,7 +153,6 @@ def _run_setup(args: argparse.Namespace) -> int:
         args.mqtt_server_ip,
         args.mqtt_server_port,
     )
-    _report_mac(args.thermostat_ip)
     return EXIT_OK
 
 

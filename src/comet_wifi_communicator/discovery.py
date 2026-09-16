@@ -85,8 +85,8 @@ def _mac_from_arp_command(ip: str) -> str | None:
 def hotspot_mac(thermostat_ip: str = THERMOSTAT_IP) -> str | None:
     """Return the MAC address of the thermostat's hotspot, if this computer knows it.
 
-    The address is taken from the ARP table, so it is only there after
-    this computer talked to the thermostat, as :func:`provision` does.
+    The address is taken from the ARP table, so this computer must be connected to the
+    hotspot.
 
     :param thermostat_ip: The thermostat's address inside its hotspot.
     :return: The normalized MAC address, or ``None`` when it cannot be found.
@@ -106,7 +106,7 @@ def hotspot_mac(thermostat_ip: str = THERMOSTAT_IP) -> str | None:
 
 
 def discover_thermostat_mac(thermostat_ip: str = THERMOSTAT_IP) -> str | None:
-    """Return the MAC address of the thermostat that was just provisioned.
+    """Return the MAC address of the thermostat.
 
     :param thermostat_ip: The thermostat's address inside its hotspot.
     :return: The thermostat's MAC address, or ``None`` when it cannot be found.
